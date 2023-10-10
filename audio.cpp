@@ -1,51 +1,77 @@
-#include "audio.h"
-#include <raylib.h>
-#include <raymath.h>
+#include "audio.hpp"
+#include "MidiFile.h"
+#include <chrono>
 #include <iostream>
 #include <list>
+#include <raylib.h>
+#include <raymath.h>
+using namespace std; //för att slippa skriva std::string
 
 //arrayen med låtar defineras 
 //*ska fixa ett bättre sätt att lösa det här sen
-const char *trackList[2] = {"assets/music/math_jungle.ogg", "assets/music/King-Gizzard_Horology.ogg"};
 //indexen är desamma
-const char *midiList[2] = {"assets/midi/math_jungle.midi", "assets/midi/King-Gizzard_Horology.midi"};
-
+Music music;
+Song trackList[2]; //skapar en lista över låt-klasser
 
 const char *filename; //för att detta ska vara lätt tillgängligt i alla funktioner
-
-Music music;
-Audio::Audio()
-{
-    //sätter värdena av variablerna i audio.hpp
-}
+/*
+const char *midiList[2] = {"assets/midi/math_jungle.mid", "assets/midi/King-Gizzard_Horology.mid"};
+*/
 
 void Audio::Update()
 {
-    //!---------------------------------------------
     UpdateMusicStream(music);   // för att musiken ska ladda
-    std::cout << GetMusicTimePlayed(music) << "\n";
-    //!---------------------------------------------
+    Timing();
+}
+void Song::CreateTrackList()
+{
+    //tanken är att stoppa in all data om en låt här
+    Song mj("Math Jungle - Max Wasserman", "assets/music/math_jungle.ogg", "assets/midi/math_jungle.mid", 120, 0.0f);
+    Song h("Horology - King Gizzard and the Lizard Wizard", "assets/music/King-Gizzard_Horology.ogg", "assets/midi/King-Gizzard_Horology.mid", 165, 0.0f);
+    
+    trackList[0] = mj;
+    trackList[1] = h;
 
 }
 
-void Audio::PlayOGG(const char *filename){
+void Audio::PlaySong(int i)
+{
+    Song song = trackList[i]; 
+    //spelar enbart ljudet
+    PlayOGG(song.path);
+    //laddar in midi-filen, vilket är det man ska trycka på knappar i takt med
+    PlayBeatmap(song.bPath);
+   // PlayMIDI(midiname);
+    //const char *midiName = "assets/music/math_jungle.ogg";
+    //PlayMIDI(midiName);
+
+}
+
+
+void Audio::Timing()
+{
+    std::cout << GetMusicTimePlayed(music) << "\n";
+    float songPosition = GetMusicTimePlayed(music);
+    //hur länge man väntar innan noterna kommer fram
+}
+
+void Audio::PlayOGG(const char *path){
     InitAudioDevice();
-    music = LoadMusicStream(filename);
-    //start playing ogg file
+    //laddar musik
+    music = LoadMusicStream(path);
+    //spelar ogg-filen
     PlayMusicStream(music);
     GetMusicTimePlayed(music);
     //bool pause = false;    
 }
 
-
-void Audio::PlaySong(int songIndex)
+void Audio::PlayBeatmap(const char*midiname)
 {
-    
-    const char *filename = trackList[songIndex];
-    PlayOGG(filename);
-    //initialize beatmap
+    //läs in filen
+    //midifile.read("test.mid");
+}
 
-    //const char *midiName = "assets/music/math_jungle.ogg";
-    //PlayMIDI(midiName);
+void Audio::NoteMovement()
+{
 
 }
