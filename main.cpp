@@ -1,9 +1,15 @@
+//standard c++ headers
+#include <list>
+#include <iostream>
+
+//raylib headers
 #include "raylib.h"
 #include "libs/raymath.h"
-#include <list>
+
+//våra egna headers 
 #include "player.hpp"
 #include "scenery.hpp"
-#include <iostream>
+#include "note.hpp"
 
 
 void drawEverything(Camera3D& cam, Player& plObj, std::list<Scenery>& scObjs)
@@ -71,7 +77,6 @@ int main()
             sc.moveScenery();
             if(sc.outOfBounds == true)
             {
-                sc.deleteScenery();
                 sc = Scenery(1);
             }
         }

@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include "libs/raymath.h"
+#include "assets.hpp"
 #include <list>
 
 struct Player
@@ -9,7 +10,7 @@ struct Player
         int animationDirection = 1;
         bool animatorActive = false;
         int animationCycles = 0;
-        Model playerModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f));//Raylib.LoadModel("assets/cube.obj"); //ladda spelarmodellen
+        Model playerModel = playerAssets::Models;//ladda spelarmodellen
         
     public: 
         float playerXPosition = 0.0f;
