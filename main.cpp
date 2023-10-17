@@ -12,7 +12,7 @@
 #include "note.hpp"
 
 
-void drawEverything(Camera3D& cam, Player& plObj, std::list<Scenery>& scObjs)
+void drawEverything(Camera3D& cam, Player& plObj, std::list<Scenery>& scObjs, std::list<Note>& ntObjs)
 {
     //setup
     BeginDrawing();
@@ -31,6 +31,12 @@ void drawEverything(Camera3D& cam, Player& plObj, std::list<Scenery>& scObjs)
     {
         sc.drawSceneryModel();
     }
+    
+    for(Note& nt : ntObjs)
+    {
+        nt.drawNoteModel();
+    }
+    
 
     //Rita FPS och avsluta ritande
     EndMode3D();
@@ -62,13 +68,16 @@ int main()
     
 
     Player playerObject; //skapa spelaren
-    std::list<Scenery> sceneryObjects; //lista över alla dekorationsobjekt
+    std::list<Scenery> sceneryObjects;
+    std::list<Note> noteObjects; //lista över alla dekorationsobjekt
     sceneryObjects.push_back(Scenery(0)); //lägg till ett nytt dekorationsobjekt i listan
+    noteObjects.push_back(Note(0));
+    noteObjects.push_back(Note(2));
 
     //huvudloop
     while (!WindowShouldClose())
     {
-        playerObject.playerInput(); //har spelaren tryckt på en knapp?
+        playerObject.playerInput(); //har spelaren tryckt på en knapp? Flytta och animera om spelaren gjorde det
         std::cout << GetFrameTime() << "\n";
 
         //flytta varje dekoration och kontrollera om den fortfarande behövs
@@ -80,7 +89,18 @@ int main()
                 sc = Scenery(1);
             }
         }
-        drawEverything(camera, playerObject, sceneryObjects); //rita världen
+        
+        for(Note& nt : noteObjects)
+        {
+            nt.moveNote();
+            if(nt.outOfBounds == true)
+            {
+                nt = Note(3);
+            }
+        }
+        
+        
+        drawEverything(camera, playerObject, sceneryObjects, noteObjects); //rita världen
 
     }
 

@@ -1,6 +1,5 @@
 #include "raylib.h"
 #include "libs/raymath.h"
-#include "assets.hpp"
 #include <list>
 
 struct Player
@@ -10,7 +9,7 @@ struct Player
         int animationDirection = 1;
         bool animatorActive = false;
         int animationCycles = 0;
-        Model playerModel = playerAssets::Models;//ladda spelarmodellen
+        Model playerModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f));//Raylib.LoadModel("assets/cube.obj"); //ladda spelarmodellen
         
     public: 
         float playerXPosition = 0.0f;
@@ -57,7 +56,7 @@ struct Player
         void playerInput()
         {
             //om en piltangent är nedtryckt, flytta spelaren och starta animationen
-            if(IsKeyPressed(KEY_RIGHT) && playerXPosition > -3.0f)
+            if((IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)) && playerXPosition > -3.0f)
             {
                 animationProgress = 0;
                 animationDirection = -1;
@@ -65,7 +64,7 @@ struct Player
                 animatorActive = true;
                 playerXPosition -= 1.5f;
             }
-            else if(IsKeyPressed(KEY_LEFT) && playerXPosition < 3.0f)
+            else if((IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_A)) && playerXPosition < 3.0f)
             {
                 animationProgress = 0;
                 animationDirection = -1;

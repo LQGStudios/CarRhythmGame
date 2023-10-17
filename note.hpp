@@ -1,12 +1,11 @@
 #include "raylib.h"
 #include "libs/raymath.h"
-#include "assets.hpp"
 #include <list>
 
 struct Note
 {
     private:
-        Model noteModel = noteAssets::Models;
+        Model noteModel = LoadModelFromMesh(GenMeshCube(1.0f,1.0f,1.0f));
         Vector2 notePosition =  (Vector2){1.5f, 27.0f};
     
     public: 
@@ -26,12 +25,6 @@ struct Note
             }
         }
 
-        void deleteNote()
-        {
-            //ta bort modellen från ram och frigör minnet
-            UnloadModel(noteModel);
-            
-        }
         
         Note(int lane) //ny dekoration
         {
