@@ -5,6 +5,7 @@
 //raylib headers
 #include "raylib.h"
 #include "libs/raymath.h"
+#include "libs/raygui.h"
 
 //våra egna headers 
 #include "player.hpp"
@@ -12,7 +13,12 @@
 #include "note.hpp"
 
 
-void drawEverything(Camera3D& cam, Player& plObj, std::list<Scenery>& scObjs, std::list<Note>& ntObjs)
+unsigned int cycles = 0;
+bool transition = false;
+int activeScene = 0;
+
+
+void drawWorld(Camera3D& cam, Player& plObj, std::list<Scenery>& scObjs, std::list<Note>& ntObjs)
 {
     //setup
     BeginDrawing();
@@ -34,12 +40,40 @@ void drawEverything(Camera3D& cam, Player& plObj, std::list<Scenery>& scObjs, st
     
     for(Note& nt : ntObjs)
     {
-        nt.drawNoteModel();
+        nt.drawNoteModel((0.25f * sin(cycles * 10 * PI/180) + 0.25f));
     }
     
 
     //Rita FPS och avsluta ritande
     EndMode3D();
+
+    DrawFPS(10, 10);
+
+    EndDrawing();
+}
+
+void drawMenu()
+{
+    //setup
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+
+    DrawText("RYTHM\nRALLY", 500, 50 + 10 * sin(cycles * PI/180), 80, DARKGRAY);
+    DrawText("1: Song 1\n2: Song 2\n3: Song 3\n4: Song 4\n5: Song 5\n", 10, 400, 40, DARKGRAY);
+
+    
+
+    if(transition == true)
+    {
+        DrawCircle(640, 360, cycles * 15, BLACK);
+        if(15 * cycles >= 800)
+        {
+            activeScene = 1;
+            transition = false;
+        }
+    }
+
+    //Rita FPS och avsluta ritande
 
     DrawFPS(10, 10);
 
@@ -77,30 +111,54 @@ int main()
     //huvudloop
     while (!WindowShouldClose())
     {
-        playerObject.playerInput(); //har spelaren tryckt på en knapp? Flytta och animera om spelaren gjorde det
-        std::cout << GetFrameTime() << "\n";
+        cycles += 1;
 
-        //flytta varje dekoration och kontrollera om den fortfarande behövs
-        for(Scenery& sc : sceneryObjects)
+        if(activeScene == 0)
         {
-            sc.moveScenery();
-            if(sc.outOfBounds == true)
+            if(IsKeyPressed(KEY_ENTER))
             {
-                sc = Scenery(1);
+                transition = true;
+                cycles = 0;
             }
+            drawMenu();
+        }
+        else if(activeScene == 1)
+        {
+            //har spelaren tryckt på en knapp? Flytta och animera om spelaren gjorde det
+            bool playerPressedHit = playerObject.playerInput(); 
+            
+            //flytta varje dekoration och kontrollera om den fortfarande behövs
+            for(Scenery& sc : sceneryObjects)
+            {
+                sc.moveScenery();
+                if(sc.outOfBounds == true)
+                {
+                    sc.deleteScenery();
+                    sc = Scenery(1);
+                }
+            }
+            
+            for(Note& nt : noteObjects)
+            {
+                nt.moveNote();
+                if(playerPressedHit == true)
+                {
+                    if(playerObject.playerXPosition == nt.notePosition.x && nt.notePosition.y < -0.5f && nt.notePosition.y > -1.5f)
+                    {
+                        nt.outOfBounds = true;
+                    }
+                }
+                if(nt.outOfBounds == true)
+                {
+                    //nt.deleteNote();
+                    nt = Note(3);
+                }
+            }
+            
+            
+            drawWorld(camera, playerObject, sceneryObjects, noteObjects); //rita världen
         }
         
-        for(Note& nt : noteObjects)
-        {
-            nt.moveNote();
-            if(nt.outOfBounds == true)
-            {
-                nt = Note(3);
-            }
-        }
-        
-        
-        drawEverything(camera, playerObject, sceneryObjects, noteObjects); //rita världen
 
     }
 
