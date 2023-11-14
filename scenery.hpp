@@ -30,7 +30,6 @@ struct Scenery
 
         void deleteScenery()
         {
-            UnloadModel(selectedModel);
             for (int i = 0; i < 2; i++)
             {
                 UnloadModel(sceneryModels[i]);
