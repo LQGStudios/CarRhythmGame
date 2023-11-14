@@ -11,6 +11,7 @@
 #include "player.hpp"
 #include "scenery.hpp"
 #include "note.hpp"
+#include "sound.hpp"
 
 
 unsigned int cycles = 0;
@@ -108,6 +109,12 @@ int main()
     noteObjects.push_back(Note(0));
     noteObjects.push_back(Note(2));
 
+    //!musik
+    InitAudioDevice();
+    Music music = LoadMusicStream("assets/music/140kph.ogg");
+    PlayMusicStream(music);
+
+    
     //huvudloop
     while (!WindowShouldClose())
     {
@@ -159,7 +166,8 @@ int main()
             drawWorld(camera, playerObject, sceneryObjects, noteObjects); //rita världen
         }
         
-
+        //!Musik
+        UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
     }
 
     CloseWindow();
