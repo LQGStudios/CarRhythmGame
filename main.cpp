@@ -17,7 +17,7 @@
 unsigned int cycles = 0;
 bool transition = false;
 int activeScene = 0;
-
+Music music; //path till låten
 
 void drawWorld(Camera3D& cam, Player& plObj, std::list<Scenery>& scObjs, std::list<Note>& ntObjs)
 {
@@ -81,6 +81,11 @@ void drawMenu()
     EndDrawing();
 }
 
+void PlaySong(const char* path)
+{
+    music = LoadMusicStream(path);
+    PlayMusicStream(music);
+}
 
 int main()
 {
@@ -111,9 +116,7 @@ int main()
 
     //!musik
     InitAudioDevice();
-    Music music = LoadMusicStream("assets/music/140kph.ogg");
-    PlayMusicStream(music);
-
+    PlaySong("assets/music/140kph.ogg");
     
     //huvudloop
     while (!WindowShouldClose())
