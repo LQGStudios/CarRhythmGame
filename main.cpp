@@ -1,7 +1,6 @@
 //standard c++ headers
 #include <list>
 #include <iostream>
-
 //raylib headers
 #include "raylib.h"
 #include "libs/raymath.h"
@@ -18,6 +17,8 @@ unsigned int cycles = 0;
 bool transition = false;
 int activeScene = 0;
 Music music; //path till låten
+Song song;
+Beatmap bm;
 
 void drawWorld(Camera3D& cam, Player& plObj, std::list<Scenery>& scObjs, std::list<Note>& ntObjs)
 {
@@ -81,10 +82,13 @@ void drawMenu()
     EndDrawing();
 }
 
-void PlaySong(const char* path)
+void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
 {
     music = LoadMusicStream(path);
     PlayMusicStream(music);
+    bm.LoadBeatMap(bPath);
+    std::cout << "\n\n\nHej, beatmappen är laddad\n";
+
 }
 
 int main()
@@ -116,7 +120,7 @@ int main()
 
     //!musik
     InitAudioDevice();
-    PlaySong("assets/music/140kph.ogg");
+    PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");
     
     //huvudloop
     while (!WindowShouldClose())
