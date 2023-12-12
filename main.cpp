@@ -19,6 +19,10 @@ int activeScene = 0;
 Music music; //path till låten
 Song song;
 Beatmap bm;
+CurrentSong cs;
+Timer t;
+Timer songTimer;
+double songLength;
 
 void drawWorld(Camera3D& cam, Player& plObj, std::list<Scenery>& scObjs, std::list<Note>& ntObjs)
 {
@@ -87,6 +91,7 @@ void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle
     music = LoadMusicStream(path);
     PlayMusicStream(music);
     bm.LoadBeatMap(bPath);
+    StartTimer(&songTimer, songLength); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
     std::cout << "\n\n\nHej, beatmappen är laddad\n";
 
 }
@@ -115,8 +120,15 @@ int main()
     std::list<Scenery> sceneryObjects;
     std::list<Note> noteObjects; //lista över alla dekorationsobjekt
     sceneryObjects.push_back(Scenery(0)); //lägg till ett nytt dekorationsobjekt i listan
-    noteObjects.push_back(Note(0));
+    
+    //antalet noter vi har i cirkulation
+    //vi skulle kunna lägga in hela beatmappen i det här stadiet
+    noteObjects.push_back(Note(0)); //!den här spawnar in en not. Med lite logik 
     noteObjects.push_back(Note(2));
+
+
+
+
 
     //!musik
     InitAudioDevice();
@@ -160,6 +172,7 @@ int main()
                     if(playerObject.playerXPosition == nt.notePosition.x && nt.notePosition.y < -0.5f && nt.notePosition.y > -1.5f)
                     {
                         nt.outOfBounds = true;
+                        cs.notesHit += 1; //vi kan sen räkna ut antalet missade genom att ta bort detta från totala antalet noter, vilket vi i sin tur får från antalet rader i csv-filen 
                     }
                 }
                 if(nt.outOfBounds == true)
@@ -175,6 +188,8 @@ int main()
         
         //!Musik
         UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
+        cs.songPosition = GetElapsed(songTimer);
+        std::cout << "songtimer:" << cs.songPosition;
     }
 
     CloseWindow();
