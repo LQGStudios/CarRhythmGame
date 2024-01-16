@@ -88,11 +88,11 @@ void drawMenu()
 
 void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
 {
-    music = LoadMusicStream(path);
     PlayMusicStream(music);
     bm.LoadBeatMap(bPath);
     StartTimer(&songTimer, songLength); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
     std::cout << "\n\n\nHej, beatmappen är laddad\n";
+    music = LoadMusicStream(path);
 
 }
 
@@ -121,18 +121,11 @@ int main()
     std::list<Note> noteObjects; //lista över alla dekorationsobjekt
     sceneryObjects.push_back(Scenery(0)); //lägg till ett nytt dekorationsobjekt i listan
     
-    //antalet noter vi har i cirkulation
-    //vi skulle kunna lägga in hela beatmappen i det här stadiet
-    noteObjects.push_back(Note(0)); //!den här spawnar in en not. Med lite logik 
-    noteObjects.push_back(Note(2));
-
-
-
-
-
     //!musik
     InitAudioDevice();
     PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");
+    //vi skulle kunna lägga in hela beatmappen i det här stadiet
+    noteObjects.push_back(Note(0)); //!den här spawnar in en not. Med lite logik kan denna till och spawna noter på rätt plats vid rätt tid
     
     //huvudloop
     while (!WindowShouldClose())
@@ -189,7 +182,13 @@ int main()
         //!Musik
         UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
         cs.songPosition = GetElapsed(songTimer);
-        std::cout << "songtimer:" << cs.songPosition;
+        if(cs.songPosition - bm.t <(1/60)) //om tiden är inom 1/60 sekund marginal, sätt ut not
+        {
+            //do stuff
+            //  noteObjects.push_back(Note(bm.lane));
+            
+        }
+        //std::cout << "songtimer:" << cs.songPosition;
     }
 
     CloseWindow();
