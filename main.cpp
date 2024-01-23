@@ -89,7 +89,7 @@ void drawMenu()
 void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
 {
     PlayMusicStream(music);
-    bm.LoadBeatMap(bPath);
+    bm.LoadBeatMap(bPath); //ska ske async från main eller sitta i en vector. Varje gång ny rad läses ur csv, knuffa in i vector
     StartTimer(&songTimer, songLength); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
     std::cout << "\n\n\nHej, beatmappen är laddad\n";
     music = LoadMusicStream(path);
