@@ -11,7 +11,7 @@ typedef struct Timer {
 
 void StartTimer(Timer* timer, double lifetime)
 {
-    std::cout << "startade timer";
+    std::cout << "startade timer med namn: " << timer;
     timer->startTime = GetTime(); //double
     timer->lifeTime = lifetime;
 }
@@ -23,6 +23,7 @@ bool TimerDone(Timer timer)
 
 double GetElapsed(Timer timer)
 {
+    //vi använder &timer för att peka på timers som defineras tidigare i vår kod
     return GetTime() - timer.startTime;
 }
 struct Song 
@@ -62,7 +63,10 @@ struct Beatmap
         float beatPosition; //relativ till songPosition
         
         std::vector<CSVNote> lt = {}; //lane, time, datan byts ut mot det som står i csv
-        void LoadBeatMap(const char*bPath) //läser in en csv-fil med beatmappen i. Denna beatmap kommer från ett excel-dokument med timing och annan notinformation
+
+        //läser in en csv-fil med beatmappen i. Denna beatmap kommer från ett excel-dokument med timing och annan notinformation
+        //csv to vector converter
+        void LoadBeatMap(const char*bPath) 
         {
             std::ifstream fullBeatmap;
             fullBeatmap.open(bPath);
@@ -73,12 +77,8 @@ struct Beatmap
             }
             
             int i = 0; //för denna while-loop
-            //& för att peka på timern som definerades några rader upp i denna struct
-            StartTimer(&timer1, 1); //tiden till allra första noten
             while (fullBeatmap.peek() != EOF) //medans vi läser filen, innan den har tagit slut alltså, kollar vi på tabellen rad för rad
             {
-                currTime = GetElapsed(timer1);
-                std::cout << "currTime:" << currTime;
                 std::string lt; //något av de 2 värdena i csv-filen(l står för värdet i kolumn 0, vilken fil på vägen (0-4), t står för tiden i sekunder då noten ska dyka upp)
                 //läser en rad av beatmappen
                 getline(fullBeatmap, lt, ',');
@@ -89,15 +89,15 @@ struct Beatmap
                     //talet är i första kolumnen, ska då behandlas som lane
                     //l= lane
                     l = std::stoi(lt);
-                    std::cout << "reading lane!" << l;
+                    //std::cout << "reading lane!" << l;
                 }
                 else
                 {
                     //t = time
                     t = std::stod(lt);
-                    std::cout << "reading time, " << t;
                     i= -1;//så att i ska bli 0 igen när loopen börjar om
-                    //kalla funktionen som sätter ut en not utifrån dessa parametrar, vänta sen till tiden för nästa not
+                    //std::cout << "reading time, " << t;
+                    
                 } 
                 i++;
                 lt.push_back(l);
@@ -109,4 +109,13 @@ struct Beatmap
             fullBeatmap.close();
             std::cout << "beatmappen är slut\n";
         }
+        bool ShouldPlaceNote(timer timer, std::vector<CSVNote> lt) // kalla på i main, vid update music stream
+        {
+            for(int i = 0; i < lt.size(); i++)
+            {
+
+            }
+            if(timer){}
+        }
+
 };

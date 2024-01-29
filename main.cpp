@@ -90,7 +90,8 @@ void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle
 {
     PlayMusicStream(music);
     bm.LoadBeatMap(bPath); //ska ske async från main eller sitta i en vector. Varje gång ny rad läses ur csv, knuffa in i vector
-    StartTimer(&songTimer, songLength); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
+    std::cout << GetMusicTimeLength(music);
+    StartTimer(&songTimer, GetMusicTimeLength(music)); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
     std::cout << "\n\n\nHej, beatmappen är laddad\n";
     music = LoadMusicStream(path);
 
@@ -123,6 +124,7 @@ int main()
     
     //!musik
     InitAudioDevice();
+    //todo: switch för att välja låt
     PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");
     //vi skulle kunna lägga in hela beatmappen i det här stadiet
     noteObjects.push_back(Note(0)); //!den här spawnar in en not. Med lite logik kan denna till och spawna noter på rätt plats vid rätt tid
@@ -181,7 +183,7 @@ int main()
         
         //!Musik
         UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
-        cs.songPosition = GetElapsed(songTimer);
+        GetElapsed(songTimer);
         if(cs.songPosition - bm.t <(1/60)) //om tiden är inom 1/60 sekund marginal, sätt ut not
         {
             //do stuff
