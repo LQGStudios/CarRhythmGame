@@ -109,13 +109,19 @@ struct Beatmap
             fullBeatmap.close();
             std::cout << "beatmappen är slut\n";
         }
-        bool ShouldPlaceNote(timer timer, std::vector<CSVNote> lt) // kalla på i main, vid update music stream
+        // kalla på i main, vid update music stream
+        bool ShouldPlaceNote(Timer timer, std::vector<CSVNote>& lt) //&tecken clutch
         {
             for(int i = 0; i < lt.size(); i++)
             {
-
+                if(timer == lt[i])
+                {
+                    return true;
+                }
+                return false;
+                i = i + 2;
             }
-            if(timer){}
+
         }
 
 };
