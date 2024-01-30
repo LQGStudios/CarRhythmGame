@@ -1,7 +1,9 @@
 #include "raylib.h"
+#include "vector"
 #include "libs/raymath.h"
 #include <list>
 #include <fstream> //för att läsa csv med beatmaps
+#include <string>
  
 typedef struct Timer {
     double startTime;   // Start time (seconds)
@@ -10,7 +12,7 @@ typedef struct Timer {
 
 void StartTimer(Timer* timer, double lifetime)
 {
-    std::cout << "startade timer";
+    std::cout << "startade timer med namn: " << timer;
     timer->startTime = GetTime(); //double
     timer->lifeTime = lifetime;
 }
@@ -22,6 +24,7 @@ bool TimerDone(Timer timer)
 
 double GetElapsed(Timer timer)
 {
+    //vi använder &timer för att peka på timers som defineras tidigare i vår kod
     return GetTime() - timer.startTime;
 }
 struct Song 
@@ -40,15 +43,31 @@ struct CurrentSong //Värdena i denna struct ska ändras medans man spelar
         
     
 };
+struct CSVNote
+{
+    int lane;
+    double time;
+    CSVNote(float _time, int _lane)
+    {
+        time = _time;
+        lane = _lane;
+    }
+};
+
 struct Beatmap
 {
     public:
-        int lane;
+        int l;
         double t;
         Timer timer1;
         double currTime;
         float beatPosition; //relativ till songPosition
-        void LoadBeatMap(const char*bPath) //läser in en csv-fil med beatmappen i. Denna beatmap kommer från ett excel-dokument med timing och annan notinformation
+        
+        std::vector<CSVNote> lt = {}; //lane, time, datan byts ut mot det som står i csv
+
+        //läser in en csv-fil med beatmappen i. Denna beatmap kommer från ett excel-dokument med timing och annan notinformation
+        //csv to vector converter
+        void LoadBeatMap(const char*bPath) 
         {
             std::ifstream fullBeatmap;
             fullBeatmap.open(bPath);
@@ -59,35 +78,51 @@ struct Beatmap
             }
             
             int i = 0; //för denna while-loop
-            StartTimer(&timer1, 10); //& för att peka på timern som definerades några rader upp i denna struct
             while (fullBeatmap.peek() != EOF) //medans vi läser filen, innan den har tagit slut alltså, kollar vi på tabellen rad för rad
             {
-                currTime = GetElapsed(timer1);
-            //läser en rad av beatmappen
                 std::string lt; //något av de 2 värdena i csv-filen(l står för värdet i kolumn 0, vilken fil på vägen (0-4), t står för tiden i sekunder då noten ska dyka upp)
+                //läser en rad av beatmappen
                 getline(fullBeatmap, lt, ',');
                 std::cout << lt <<std::endl;
-                std::cout << currTime;
 
-                
                 if (i < 1)
                 {
-                    //l
                     //talet är i första kolumnen, ska då behandlas som lane
-                    std::cout << "reading lane!";
-                    lane = std::stoi(lt);
+                    //l= lane
+                    l = std::stoi(lt);
+                    //std::cout << "reading lane!" << l;
                 }
                 else
                 {
-                    //t
-                    std::cout << "reading time";
+                    //t = time
                     t = std::stod(lt);
                     i= -1;//så att i ska bli 0 igen när loopen börjar om
-                    //kalla funktionen som sätter ut en not utifrån dessa parametrar, vänta sen till tiden för nästa not
+                    //std::cout << "reading time, " << t;
+                    
                 } 
                 i++;
+                lt.push_back(l);
+                lt.push_back(t);   
+                //StartTimer(&timer1, t); 
+                
             }
+            
             fullBeatmap.close();
-
+            std::cout << "beatmappen är slut\n";
         }
+        // kalla på i main, vid update music stream
+        bool ShouldPlaceNote(Timer timer) //&tecken clutch
+        {
+            for(int i = 1; i < lt.size(); i++) //delar med två för det finns två kolumner
+            {
+
+                if(GetElapsed(timer) == lt[i].time)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
 };

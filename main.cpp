@@ -19,6 +19,7 @@ int activeScene = 0;
 Music music; //path till låten
 Song song;
 Beatmap bm;
+std::vector<CSVNote> csvNote;
 CurrentSong cs;
 Timer t;
 Timer songTimer;
@@ -88,11 +89,12 @@ void drawMenu()
 
 void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
 {
-    PlayMusicStream(music);
-    bm.LoadBeatMap(bPath);
-    StartTimer(&songTimer, songLength); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
-    std::cout << "\n\n\nHej, beatmappen är laddad\n";
     music = LoadMusicStream(path);
+    bm.LoadBeatMap(bPath); //ska ske async från main eller sitta i en vector. Varje gång ny rad läses ur csv, knuffa in i vector
+    PlayMusicStream(music);
+    StartTimer(&songTimer, GetMusicTimeLength(music)); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
+    std::cout << GetMusicTimeLength(music);
+    std::cout << "\n\n\nHej, beatmappen är laddad\n";
 
 }
 
@@ -123,6 +125,7 @@ int main()
     
     //!musik
     InitAudioDevice();
+    //todo: switch för att välja låt
     PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");
     //vi skulle kunna lägga in hela beatmappen i det här stadiet
     noteObjects.push_back(Note(0)); //!den här spawnar in en not. Med lite logik kan denna till och spawna noter på rätt plats vid rätt tid
@@ -181,14 +184,22 @@ int main()
         
         //!Musik
         UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
-        cs.songPosition = GetElapsed(songTimer);
-        if(cs.songPosition - bm.t <(1/60)) //om tiden är inom 1/60 sekund marginal, sätt ut not
+        std::cout << GetElapsed(songTimer) << std::endl;
+        
+        if(bm.ShouldPlaceNote(songTimer))
         {
-            //do stuff
-            //  noteObjects.push_back(Note(bm.lane));
-            
+            //om tiden är inom en viss  marginal, sätt ut not
+            //?how it's done:
+            //noteObjects.push_back(Note(bm.lane)); 
+            std::cout << "placed note lmao" << std::endl;
         }
-        //std::cout << "songtimer:" << cs.songPosition;
+        else
+        {
+            //iterate through lt vector perchance
+            std::cout << "not the time to place a note" << std::endl;
+        }
+        
+        
     }
 
     CloseWindow();
