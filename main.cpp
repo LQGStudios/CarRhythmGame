@@ -19,6 +19,7 @@ int activeScene = 0;
 Music music; //path till låten
 Song song;
 Beatmap bm;
+std::vector<CSVNote> csvNote;
 CurrentSong cs;
 Timer t;
 Timer songTimer;
@@ -183,19 +184,21 @@ int main()
         
         //!Musik
         UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
-        GetElapsed(songTimer);
-        if(bm.ShouldPlaceNote(songTimer, bm.lt)) 
+        std::cout << GetElapsed(songTimer) << std::endl;
+        
+        if(bm.ShouldPlaceNote(songTimer))
         {
             //om tiden är inom en viss  marginal, sätt ut not
             //?how it's done:
             //noteObjects.push_back(Note(bm.lane)); 
-            
+            std::cout << "placed note lmao" << std::endl;
         }
         else
         {
             //iterate through lt vector perchance
-            std::cout << "\nnot the time to place a note\n";
+            std::cout << "not the time to place a note" << std::endl;
         }
+        
         
     }
 

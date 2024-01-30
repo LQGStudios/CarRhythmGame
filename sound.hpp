@@ -3,6 +3,7 @@
 #include "libs/raymath.h"
 #include <list>
 #include <fstream> //för att läsa csv med beatmaps
+#include <string>
  
 typedef struct Timer {
     double startTime;   // Start time (seconds)
@@ -45,7 +46,7 @@ struct CurrentSong //Värdena i denna struct ska ändras medans man spelar
 struct CSVNote
 {
     int lane;
-    float time;
+    double time;
     CSVNote(float _time, int _lane)
     {
         time = _time;
@@ -110,18 +111,18 @@ struct Beatmap
             std::cout << "beatmappen är slut\n";
         }
         // kalla på i main, vid update music stream
-        bool ShouldPlaceNote(Timer timer, std::vector<CSVNote>& lt) //&tecken clutch
+        bool ShouldPlaceNote(Timer timer) //&tecken clutch
         {
-            for(int i = 0; i < lt.size(); i++)
+            for(int i = 1; i < lt.size(); i++) //delar med två för det finns två kolumner
             {
-                if(timer == lt[i])
+
+                if(GetElapsed(timer) == lt[i].time)
                 {
                     return true;
                 }
-                return false;
-                i = i + 2;
             }
 
+            return false;
         }
 
 };
