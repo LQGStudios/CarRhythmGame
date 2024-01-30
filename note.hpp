@@ -4,16 +4,11 @@
 
 struct Note
 {
-    private:
-        Model noteModel = LoadModelFromMesh(GenMeshCube(1.0f,1.0f,1.0f));
-    
+
     public: 
         Vector2 notePosition =  (Vector2){1.5f, 27.0f};
         bool outOfBounds = false;
-        void drawNoteModel(float noteY)
-        {   
-            DrawModel(noteModel, (Vector3){notePosition.x, noteY, notePosition.y}, 1.0f, YELLOW);//rita modellen
-        }
+        
         void moveNote()
         {
             //Z positionen
@@ -23,11 +18,6 @@ struct Note
             {
                 outOfBounds = true;
             }
-        }
-
-        void deleteNote()
-        {
-            UnloadModel(noteModel);
         }
         
         Note(int lane) //ny dekoration
