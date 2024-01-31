@@ -1,5 +1,5 @@
 //standard c++ headers
-#include <list>
+#include <vector>
 #include <iostream>
 //raylib headers
 #include "raylib.h"
@@ -12,7 +12,7 @@
 #include "note.hpp"
 #include "sound.hpp"
 
-
+//misc variabler
 unsigned int cycles = 0;
 bool transition = false;
 int activeScene = 0;
@@ -22,37 +22,101 @@ Beatmap bm;
 CurrentSong cs;
 Timer t;
 Timer songTimer;
-double songLength;
+double songLength;//assets for the world
+Texture2D grassTexture;
+Texture2D roadTexture;
+Texture2D skyTexture;
 
-void drawWorld(Camera3D& cam, Player& plObj, std::list<Scenery>& scObjs, std::list<Note>& ntObjs)
+Model grassPlane;
+Model asphaltPlane;
+
+//moving pieces
+Texture2D noteTexture;
+Model sceneryModels[2];
+Model playerModel;
+Sound moveSound;
+
+//shaders
+Shader worldShader;
+Shader objectShader;
+Shader noteShader;
+
+void loadAssets()
+{
+    grassTexture = LoadTexture("assets/grass11.png");
+    roadTexture = LoadTexture("assets/asphalt.png");
+    skyTexture = LoadTexture("assets/Fading_Sky-Sunset_02-1024x512.png");
+
+    noteTexture = LoadTexture("assets/note.png");
+    sceneryModels[0] = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f)); 
+    sceneryModels[1] = LoadModelFromMesh(GenMeshCube(0.5f, 3.0f, 2.0f));
+    playerModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f));
+    moveSound = LoadSound("assets/104026__rutgermuller__tires-squeaking.wav");
+
+    grassPlane = LoadModelFromMesh(GenMeshPlane(60.0f, 50.0f, 50, 50));
+    SetMaterialTexture(&grassPlane.materials[0], MATERIAL_MAP_DIFFUSE, grassTexture);
+    asphaltPlane = LoadModelFromMesh(GenMeshPlane(9.5f, 50.0f, 50, 50));
+    SetMaterialTexture(&asphaltPlane.materials[0], MATERIAL_MAP_DIFFUSE, roadTexture);
+    worldShader = LoadShader("assets/base.vs",0);
+    grassPlane.materials[0].shader = worldShader;
+    asphaltPlane.materials[0].shader = worldShader;
+
+    objectShader = LoadShader("assets/objects.vs",0);
+    sceneryModels[0].materials[0].shader = objectShader;
+    sceneryModels[1].materials[0].shader = objectShader;
+
+    noteShader = LoadShader("assets/notes.vs",0);
+}
+
+void unloadAssets()
+{
+    UnloadTexture(grassTexture);
+    UnloadTexture(roadTexture);
+    UnloadTexture(skyTexture);
+
+    UnloadTexture(noteTexture);
+    UnloadModel(sceneryModels[0]);
+    UnloadModel(sceneryModels[1]);
+    UnloadModel(playerModel);
+    UnloadSound(moveSound);
+
+    UnloadModel(grassPlane);
+    UnloadModel(asphaltPlane);
+    UnloadShader(worldShader);
+    UnloadShader(objectShader);
+    UnloadShader(noteShader);
+}
+
+
+void drawWorld(Camera3D& cam, Player& plObj, std::vector<Scenery>& scObjs, std::vector<Note>& ntObjs)
 {
     //setup
     BeginDrawing();
     ClearBackground(RAYWHITE);
+    DrawTexturePro(skyTexture, {0,0,1024,512}, {0,0,1280,720}, {0,0}, 0.0f, WHITE); //rita skyboxen
     BeginMode3D(cam);
 
-    //rita spelaren
-    plObj.drawPlayer();
-
     //rita världen
-    DrawPlane((Vector3){0.0f,-0.6f,0.0f}, (Vector2){60.0f, 50.0f}, GREEN);
-    DrawPlane((Vector3){0.0f,-0.59f,0.0f}, (Vector2){9.5f, 50.0f}, GRAY);
+    DrawModel(grassPlane, (Vector3){0.0f,-0.6f,-5.0f}, 1.0f, WHITE);
+    DrawModel(asphaltPlane, (Vector3){0.0f,-0.59f,-5.0f}, 1.0f, WHITE);
 
+    //rita spelaren
+    plObj.drawPlayer(playerModel);
+
+    BeginShaderMode(noteShader); //noter har inte en inbyggd shader och därför behövs shadermode
+        for (int i = 0; i < (int)ntObjs.size(); i++)
+        {
+            //rita noter
+            DrawBillboard(cam, noteTexture, (Vector3){ntObjs[i].notePosition.x, 0, ntObjs[i].notePosition.y}, 2.0f, WHITE);
+        }
+    EndShaderMode();
+    
     //rita dekorationer
-    for(Scenery& sc : scObjs)
-    {
-        sc.drawSceneryModel();
-    }
-    
-    for(Note& nt : ntObjs)
-    {
-        nt.drawNoteModel((0.25f * sin(cycles * 10 * PI/180) + 0.25f));
-    }
-    
+    sceneryModels[scObjs[0].selectedModel].transform = MatrixTranslate(scObjs[0].sceneryPosition.x, 0.0f, scObjs[0].sceneryPosition.y);
+    DrawModel(sceneryModels[scObjs[0].selectedModel], (Vector3){0.0f,0.0f,0.0f}, 1.0f, BLUE);
 
     //Rita FPS och avsluta ritande
     EndMode3D();
-
     DrawFPS(10, 10);
 
     EndDrawing();
@@ -96,11 +160,11 @@ int main()
     
     //öppna ett nytt fönster
     InitWindow(screenWidth, screenHeight, "Rythm Rally");
+    InitAudioDevice(); /*GLÖM INTE ATT STARTA LJUDENHETEN*/
     SetTargetFPS(60);
 
     //skapa en ny kamera
     Camera3D camera = {0};
-    
     camera.position = (Vector3){0.0f, 6.44f, -6.1f};
     camera.target = (Vector3){0.0f, 2.0f, 1.0f};
     camera.up = (Vector3){0.0f, 0.69f, 0.15f};
@@ -109,13 +173,12 @@ int main()
     
 
     Player playerObject; //skapa spelaren
-    std::list<Scenery> sceneryObjects;
-    std::list<Note> noteObjects; //lista över alla dekorationsobjekt
+    std::vector<Scenery> sceneryObjects = {};
+    std::vector<Note> noteObjects = {}; //lista över alla dekorationsobjekt
     sceneryObjects.push_back(Scenery(0)); //lägg till ett nytt dekorationsobjekt i listan
-    
-    
-    noteObjects.push_back(Note(0)); //!den här spawnar in en not. Med lite logik kan denna till och spawna noter på rätt plats vid rätt tid
-    
+
+    loadAssets();
+
     //huvudloop
     while (!WindowShouldClose())
     {
@@ -123,7 +186,7 @@ int main()
 
         if(activeScene == 0)
         {
-            if(IsKeyPressed(KEY_ENTER))
+            if(IsKeyPressed(KEY_ENTER) && transition == false)
             {
                 transition = true;
                 cycles = 0;
@@ -133,34 +196,66 @@ int main()
         else if(activeScene == 1)
         {
             //har spelaren tryckt på en knapp? Flytta och animera om spelaren gjorde det
-            bool playerPressedHit = playerObject.playerInput(); 
+            bool playerPressedHit = playerObject.playerInput(moveSound); 
             
             //flytta varje dekoration och kontrollera om den fortfarande behövs
-            for(Scenery& sc : sceneryObjects)
+            for (int i = 0; i < (int)sceneryObjects.size(); i++)
             {
+                Scenery& sc = sceneryObjects[i];
                 sc.moveScenery();
                 if(sc.outOfBounds == true)
                 {
-                    sc.deleteScenery();
                     sc = Scenery(1);
                 }
             }
             
-            for(Note& nt : noteObjects)
+            for (int i = (int)noteObjects.size() - 1; i >= 0; i--)
             {
+                Note& nt = noteObjects[i];
                 nt.moveNote();
                 if(playerPressedHit == true)
                 {
-                    if(playerObject.playerXPosition == nt.notePosition.x && nt.notePosition.y < -0.5f && nt.notePosition.y > -1.5f)
+
+                    /*
+
+                    y>0 miss
+                    0 > y > -0.5 tidig
+                    -0.5 > y > -1.5 perfekt 
+                    -1.5 > y > -2.0 sen
+                    -2.0 > y miss
+
+                    */
+                    if(playerObject.playerXPosition == nt.notePosition.x)
                     {
-                        nt.outOfBounds = true;
-                        cs.notesHit += 1; //vi kan sen räkna ut antalet missade genom att ta bort detta från totala antalet noter, vilket vi i sin tur får från antalet rader i csv-filen 
+                        
+                        if(nt.notePosition.y > -0.5f && nt.notePosition.y < 0.0f)//tidig träff
+                        {
+                            std::cout << "EARLY" << std::endl;
+                            nt.outOfBounds = true;
+                        }
+                        else if(nt.notePosition.y > -1.5f && nt.notePosition.y < -0.5f)//perfekt träf
+                        {
+                            std::cout << "PERFEKT" << std::endl;
+                            nt.outOfBounds = true;
+                        }
+                        else if(nt.notePosition.y > -2.0f && nt.notePosition.y < -1.5f) //sen träff
+                        {
+                            std::cout << "LATE" << std::endl;
+                            nt.outOfBounds = true;
+                        }
+                        else
+                        {
+                            std::cout << "MISS" << std::endl;
+                        }
+                    }
+                    else
+                    {
+                        std::cout << "MISS" << std::endl;
                     }
                 }
                 if(nt.outOfBounds == true)
                 {
-                    //nt.deleteNote();
-                    nt = Note(3);
+                    noteObjects.erase(noteObjects.begin() + i); //radera notobjekt från listan
                 }
             }
             
@@ -168,24 +263,10 @@ int main()
             drawWorld(camera, playerObject, sceneryObjects, noteObjects); //rita världen
         }
         
-        //!Musik
-        UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
-        GetElapsed(songTimer);
-        if(bm.ShouldPlaceNote(songTimer, bm.lt)) 
-        {
-            //om tiden är inom en viss  marginal, sätt ut not
-            //?how it's done:
-            //noteObjects.push_back(Note(bm.lane)); 
-            
-        }
-        else
-        {
-            //iterate through lt vector perchance
-            std::cout << "\nnot the time to place a note\n";
-        }
-        
+
     }
 
+    unloadAssets();
     CloseWindow();
     
 }

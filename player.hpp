@@ -11,10 +11,10 @@ struct Player
         int animationCycles = 0;
         
     public: 
-        Model playerModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f));//Raylib.LoadModel("assets/cube.obj"); //ladda spelarmodellen
+        
         float playerXPosition = 0.0f;
 
-        void drawPlayer()
+        void drawPlayer(Model& playerModel)
         {   
         
             float angle = 0; //sätt vinkeln till 0
@@ -58,14 +58,14 @@ struct Player
 
             playerModel.transform = MatrixRotateXYZ((Vector3){0.0f, DEG2RAD * angle, 0.0f}); //rotera modellen
             DrawModel(playerModel, (Vector3){playerXPosition, 0.0f, -1.0f}, 1.0f, RED);//rita modellen
-            DrawCubeWires((Vector3){playerXPosition, 0.0f, -1.0f}, 1.0f, 1.0f, 2.0f, BLACK);//rita hitbox
         }
 
-        bool playerInput()
+        bool playerInput(Sound& sfx)
         {
             //om en piltangent är nedtryckt, flytta spelaren och starta animationen
             if((IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)) && playerXPosition > -3.0f)
             {
+                PlaySound(sfx);
                 animationProgress = 0;
                 animationDirection = -1;
                 animationCycles = 0;
@@ -74,6 +74,7 @@ struct Player
             }
             else if((IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_A)) && playerXPosition < 3.0f)
             {
+                PlaySound(sfx);
                 animationProgress = 0;
                 animationDirection = 1;
                 animationCycles = 0;
