@@ -8,7 +8,6 @@ attribute vec4 vertexColor;
 
 // Input uniform values
 uniform mat4 mvp;
-uniform mat4 matModel;
 
 // Output vertex attributes (to fragment shader)
 varying vec2 fragTexCoord;
@@ -21,12 +20,11 @@ void main()
     // Send vertex attributes to fragment shader
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;
-    
 
     // Calculate final vertex position
     gl_Position = mvp * vec4(
             vertexPosition.x, 
-            pow((vertexPosition.z + matModel[3][2])/2.5, 2.0) * -0.075 + vertexPosition.y, 
+            pow((vertexPosition.z)/2.5, 2.0) * -0.075 + vertexPosition.y, 
             vertexPosition.z, 
             1.0);
 }

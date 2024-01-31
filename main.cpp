@@ -12,7 +12,7 @@
 #include "scenery.hpp"
 #include "note.hpp"
 
-
+//misc variabler
 unsigned int cycles = 0;
 bool transition = false;
 int activeScene = 0;
@@ -21,15 +21,19 @@ Texture2D grassTexture;
 Texture2D roadTexture;
 Texture2D skyTexture;
 
+Model grassPlane;
+Model asphaltPlane;
+
+//moving pieces
 Texture2D noteTexture;
 Model sceneryModels[2];
 Model playerModel;
 Sound moveSound;
 
-Model grassPlane;
-Model asphaltPlane;
+//shaders
 Shader worldShader;
 Shader objectShader;
+Shader noteShader;
 
 void loadAssets()
 {
@@ -54,6 +58,8 @@ void loadAssets()
     objectShader = LoadShader("assets/objects.vs",0);
     sceneryModels[0].materials[0].shader = objectShader;
     sceneryModels[1].materials[0].shader = objectShader;
+
+    noteShader = LoadShader("assets/notes.vs",0);
 }
 
 void unloadAssets()
@@ -72,6 +78,7 @@ void unloadAssets()
     UnloadModel(asphaltPlane);
     UnloadShader(worldShader);
     UnloadShader(objectShader);
+    UnloadShader(noteShader);
 }
 
 
@@ -87,28 +94,23 @@ void drawWorld(Camera3D& cam, Player& plObj, std::vector<Scenery>& scObjs, std::
     DrawModel(grassPlane, (Vector3){0.0f,-0.6f,-5.0f}, 1.0f, WHITE);
     DrawModel(asphaltPlane, (Vector3){0.0f,-0.59f,-5.0f}, 1.0f, WHITE);
 
-    BeginShaderMode(objectShader);
-
     //rita spelaren
     plObj.drawPlayer(playerModel);
 
+    BeginShaderMode(noteShader); //noter har inte en inbyggd shader och därför behövs shadermode
+        for (int i = 0; i < (int)ntObjs.size(); i++)
+        {
+            //rita noter
+            DrawBillboard(cam, noteTexture, (Vector3){ntObjs[i].notePosition.x, 0, ntObjs[i].notePosition.y}, 2.0f, WHITE);
+        }
+    EndShaderMode();
+    
     //rita dekorationer
-    
-        
-        //SetShaderValueMatrix(objectShader, GetShaderLocation(objectShader, "m"), );
-        DrawModel(sceneryModels[scObjs[0].selectedModel], (Vector3){scObjs[0].sceneryPosition.x, 0.0f, scObjs[0].sceneryPosition.y}, 1.0f, BLUE);
-        DrawCube((Vector3){scObjs[0].sceneryPosition.x, 0.0f, scObjs[0].sceneryPosition.y}, 1.0f, 3.0f, 1.0f, RED);
-    
-    
-    for (int i = 0; i < (int)ntObjs.size(); i++)
-    {
-        DrawBillboard(cam, noteTexture, (Vector3){ntObjs[i].notePosition.x, 0.25f * sin(cycles * 10 * PI/180) + 0.5f, ntObjs[i].notePosition.y}, 2.0f, WHITE);
-    }
-    
+    sceneryModels[scObjs[0].selectedModel].transform = MatrixTranslate(scObjs[0].sceneryPosition.x, 0.0f, scObjs[0].sceneryPosition.y);
+    DrawModel(sceneryModels[scObjs[0].selectedModel], (Vector3){0.0f,0.0f,0.0f}, 1.0f, BLUE);
 
     //Rita FPS och avsluta ritande
     EndMode3D();
-    EndShaderMode();
     DrawFPS(10, 10);
 
     EndDrawing();
@@ -151,12 +153,11 @@ int main()
     
     //öppna ett nytt fönster
     InitWindow(screenWidth, screenHeight, "Rythm Rally");
-    InitAudioDevice();
+    InitAudioDevice(); /*GLÖM INTE ATT STARTA LJUDENHETEN*/
     SetTargetFPS(60);
 
     //skapa en ny kamera
     Camera3D camera = {0};
-    
     camera.position = (Vector3){0.0f, 6.44f, -6.1f};
     camera.target = (Vector3){0.0f, 2.0f, 1.0f};
     camera.up = (Vector3){0.0f, 0.69f, 0.15f};
@@ -168,7 +169,6 @@ int main()
     std::vector<Scenery> sceneryObjects = {};
     std::vector<Note> noteObjects = {}; //lista över alla dekorationsobjekt
     sceneryObjects.push_back(Scenery(0)); //lägg till ett nytt dekorationsobjekt i listan
-    noteObjects.push_back(Note(0));
 
     loadAssets();
 
@@ -179,7 +179,7 @@ int main()
 
         if(activeScene == 0)
         {
-            if(IsKeyPressed(KEY_ENTER))
+            if(IsKeyPressed(KEY_ENTER) && transition == false)
             {
                 transition = true;
                 cycles = 0;
@@ -221,17 +221,17 @@ int main()
                     if(playerObject.playerXPosition == nt.notePosition.x)
                     {
                         
-                        if(nt.notePosition.y > -0.5f && nt.notePosition.y < 0.0f)
+                        if(nt.notePosition.y > -0.5f && nt.notePosition.y < 0.0f)//tidig träff
                         {
                             std::cout << "EARLY" << std::endl;
                             nt.outOfBounds = true;
                         }
-                        else if(nt.notePosition.y > -1.5f && nt.notePosition.y < -0.5f)
+                        else if(nt.notePosition.y > -1.5f && nt.notePosition.y < -0.5f)//perfekt träf
                         {
                             std::cout << "PERFEKT" << std::endl;
                             nt.outOfBounds = true;
                         }
-                        else if(nt.notePosition.y > -2.0f && nt.notePosition.y < -1.5f)
+                        else if(nt.notePosition.y > -2.0f && nt.notePosition.y < -1.5f) //sen träff
                         {
                             std::cout << "LATE" << std::endl;
                             nt.outOfBounds = true;
@@ -248,7 +248,7 @@ int main()
                 }
                 if(nt.outOfBounds == true)
                 {
-                    noteObjects.erase(noteObjects.begin() + i);
+                    noteObjects.erase(noteObjects.begin() + i); //radera notobjekt från listan
                 }
             }
             

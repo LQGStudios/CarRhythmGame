@@ -58,7 +58,6 @@ struct Player
 
             playerModel.transform = MatrixRotateXYZ((Vector3){0.0f, DEG2RAD * angle, 0.0f}); //rotera modellen
             DrawModel(playerModel, (Vector3){playerXPosition, 0.0f, -1.0f}, 1.0f, RED);//rita modellen
-            DrawCubeWires((Vector3){playerXPosition, 0.0f, -1.0f}, 1.0f, 1.0f, 2.0f, BLACK);//rita hitbox
         }
 
         bool playerInput(Sound& sfx)
