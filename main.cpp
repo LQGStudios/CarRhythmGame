@@ -1,7 +1,6 @@
 //standard c++ headers
 #include <vector>
 #include <iostream>
-
 //raylib headers
 #include "raylib.h"
 #include "libs/raymath.h"
@@ -11,12 +10,19 @@
 #include "player.hpp"
 #include "scenery.hpp"
 #include "note.hpp"
+#include "sound.hpp"
 
 //misc variabler
 unsigned int cycles = 0;
 bool transition = false;
 int activeScene = 0;
-//assets for the world
+Music music; //path till låten
+Song song;
+Beatmap bm;
+CurrentSong cs;
+Timer t;
+Timer songTimer;
+double songLength;//assets for the world
 Texture2D grassTexture;
 Texture2D roadTexture;
 Texture2D skyTexture;
@@ -143,6 +149,7 @@ void drawMenu()
 
     EndDrawing();
 }
+
 
 
 int main()
