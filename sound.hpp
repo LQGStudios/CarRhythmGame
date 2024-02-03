@@ -110,14 +110,17 @@ struct Beatmap
             std::cout << "beatmappen är slut\n";
         }
 
-        bool ShouldPlaceNote(Timer timer) // kalla på i main, vid update music stream
+        bool ShouldPlaceNote(double elapsed) // kalla på i main, vid update music stream
         {
+            //todo: ingen for loop här. Börja med att bara kolla om [0] av lt
+            //todo: matchar tiden. När den har returnat true en gång, gå vidare till [1] av lt och så vidare
+            //todo: laborera med margin. Den ska vara ca 1/60 av en sekund iom 60 fps target
+            
             float margin = 0.05f;
             for(std::size_t i = 1; i < lt.size(); i++) //man kan inte jämföra en int med  lt.size så därför är "i" en "size_t"
             {
-                std::cout << lt[i].time << std::endl;
-
-                if(GetElapsed(timer) < lt[i].time + margin && GetElapsed(timer) < lt[i].time - margin)
+                //std::cout << lt[i].time << std::endl;
+                if(elapsed < lt[i].time + margin && elapsed < lt[i].time - margin)
                 {
                     return true;
                 }

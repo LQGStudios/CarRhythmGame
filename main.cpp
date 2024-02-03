@@ -201,7 +201,7 @@ int main()
     while (!WindowShouldClose())
     {
         cycles += 1;
-
+        
         if(activeScene == 0)
         {
             if(IsKeyPressed(KEY_ENTER) && transition == false)
@@ -285,18 +285,15 @@ int main()
         UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
         //std::cout << GetElapsed(songTimer) << std::endl;
         
-        if(bm.ShouldPlaceNote(songTimer)) //om tiden är inom en viss  marginal, sätt ut not
+        if(bm.ShouldPlaceNote(GetElapsed(songTimer))) //om tiden är inom en viss  marginal, sätt ut not
 
         {
             //?how it's done:
-            //noteObjects.push_back(Note(lane)); 
+            noteObjects.push_back(Note(1)); 
             std::cout << "placed note lmao" << std::endl;
         }
-        else
-        {
-            //iterate through lt vector perchance
-            std::cout << "not the time to place a note" << std::endl;
-        }
+            //std::cout << "not the time to place a note" << std::endl;
+
     }
 
     unloadAssets();
