@@ -46,7 +46,7 @@ struct CurrentSong //Värdena i denna struct ska ändras medans man spelar
 struct CSVNote
 {
     int lane;
-    double time;
+    double time; 
     CSVNote(float _time, int _lane)
     {
         time = _time;
@@ -103,25 +103,26 @@ struct Beatmap
                 i++;
                 lt.push_back(l);
                 lt.push_back(t);   
-                //StartTimer(&timer1, t); 
                 
             }
             
             fullBeatmap.close();
             std::cout << "beatmappen är slut\n";
         }
-        // kalla på i main, vid update music stream
-        bool ShouldPlaceNote(Timer timer) //&tecken clutch
-        {
-            for(int i = 1; i < lt.size(); i++) //delar med två för det finns två kolumner
-            {
 
-                if(GetElapsed(timer) == lt[i].time)
+        bool ShouldPlaceNote(Timer timer) // kalla på i main, vid update music stream
+        {
+            float margin = 0.05f;
+            for(std::size_t i = 1; i < lt.size(); i++) //man kan inte jämföra en int med  lt.size så därför är "i" en "size_t"
+            {
+                std::cout << lt[i].time << std::endl;
+
+                if(GetElapsed(timer) < lt[i].time + margin && GetElapsed(timer) < lt[i].time - margin)
                 {
                     return true;
                 }
+                return false;
             }
-
             return false;
         }
 
