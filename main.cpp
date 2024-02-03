@@ -54,7 +54,7 @@ void loadAssets()
     sceneryModels[1] = LoadModelFromMesh(GenMeshCube(0.5f, 3.0f, 2.0f));
     playerModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f));
     moveSound = LoadSound("assets/104026__rutgermuller__tires-squeaking.wav");
-    SetSoundVolume(moveSound, 0.5);// justerar volymen (mellan 0 och 1)
+    //SetSoundVolume(moveSound, 0.5);// justerar volymen (mellan 0 och 1)
 
     grassPlane = LoadModelFromMesh(GenMeshPlane(60.0f, 50.0f, 50, 50));
     SetMaterialTexture(&grassPlane.materials[0], MATERIAL_MAP_DIFFUSE, grassTexture);
@@ -277,22 +277,22 @@ int main()
                 }
             }
             
-            
             drawWorld(camera, playerObject, sceneryObjects, noteObjects); //rita världen
         }
         
         //?Musik
         UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
         //std::cout << GetElapsed(songTimer) << std::endl;
-        
         if(bm.ShouldPlaceNote(GetElapsed(songTimer))) //om tiden är inom en viss  marginal, sätt ut not
 
         {
             //?how it's done:
             noteObjects.push_back(Note(1)); 
-            std::cout << "placed note lmao" << std::endl;
+            std::cout << "actually placed note lmao" << std::endl;
         }
             //std::cout << "not the time to place a note" << std::endl;
+        /*
+        */
 
     }
 
