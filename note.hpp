@@ -2,6 +2,18 @@
 #include "libs/raymath.h"
 #include <list>
 
+struct HitText
+{
+    public:
+        float lifeSpan = 3.0f;
+        int type;
+
+        HitText(int _type)
+        {
+            type = _type;
+        }
+};
+
 struct Note
 {
 
