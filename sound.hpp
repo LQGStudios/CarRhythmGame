@@ -80,7 +80,6 @@ struct Beatmap
                 std::cerr << "Kan inte öppna filen" << bPath <<std::endl; //skickar ett smidigt errormeddelande
             }
             
-            int i = 0; //för denna while-loop
             while (fullBeatmap.peek() != EOF) //medans vi läser filen, innan den har tagit slut alltså, kollar vi på tabellen rad för rad
             {
                 std::string line; //något av de 2 värdena i csv-filen(l står för värdet i kolumn 0, vilken fil på vägen (0-4), t står för tiden i sekunder då noten ska dyka upp)
@@ -91,18 +90,15 @@ struct Beatmap
 
                 
                 
-
+                //l = lane
                 l = std::stoi(line.substr(0,1));
-            
-            
-                //t = time
-                std::cout << "reading " << s << " time!" << t;
+                //std::cout << "reading " << s << " time!" << t;
+                // t = time
                 t = std::stod(s);               
                 
                 lt.push_back(CSVNote(l,t));
-                std::cout << "time to wait for: "<< lt[lt.size() - 1].lane << std::endl;
+                std::cout << "lane to place in: "<< lt[lt.size() - 1].lane << std::endl; //outputar den senast tillagda i lane
 
-                i++;
                 
             }
             
@@ -119,7 +115,7 @@ struct Beatmap
 
             if(lt[currentNoteInSong].time - margin < elapsed && elapsed < lt[currentNoteInSong].time + margin)
             {
-                return lt[currentNoteInSong++].lane; //
+                return lt[currentNoteInSong++].lane; //säger till vilken lane
             }
 
             /*
