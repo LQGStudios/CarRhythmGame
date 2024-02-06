@@ -54,6 +54,7 @@ void loadAssets()
     sceneryModels[1] = LoadModelFromMesh(GenMeshCube(0.5f, 3.0f, 2.0f));
     playerModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f));
     moveSound = LoadSound("assets/104026__rutgermuller__tires-squeaking.wav");
+    SetSoundVolume(moveSound, 0.1f);
     //SetSoundVolume(moveSound, 0.5);// justerar volymen (mellan 0 och 1)
 
     grassPlane = LoadModelFromMesh(GenMeshPlane(60.0f, 50.0f, 50, 50));
@@ -91,7 +92,7 @@ void unloadAssets()
 }
 
 
-void drawWorld(Camera3D& cam, Player& plObj, std::vector<Scenery>& scObjs, std::vector<Note>& ntObjs)
+void drawWorld(Camera3D& cam, Player& plObj, std::vector<Scenery>& scObjs, std::vector<Note>& ntObjs, std::vector<HitText>& htObjs)
 {
     //setup
     BeginDrawing();
@@ -122,7 +123,48 @@ void drawWorld(Camera3D& cam, Player& plObj, std::vector<Scenery>& scObjs, std::
     EndMode3D();
     DrawFPS(10, 10);
 
+    for (int i = (int)htObjs.size() - 1; i >= 0; i--)
+    {
+        htObjs[i].lifeSpan -= GetFrameTime() * 4.0f;
+        if(htObjs[i].lifeSpan < 0)
+        {
+            htObjs.erase(htObjs.begin() + i);
+        }
+
+        switch (htObjs[i].type)
+        {
+        case 0:
+            DrawText("EARLY", 10, 480 + htObjs[i].lifeSpan * 20.0f, 32, ColorAlpha(YELLOW, htObjs[i].lifeSpan/3.0f));
+            break;
+        case 1:
+            DrawText("PERFECT", 10, 480 + htObjs[i].lifeSpan * 20.0f, 32, ColorAlpha(MAGENTA, htObjs[i].lifeSpan/3.0f));
+            break;
+        case 2:
+            DrawText("LATE", 10, 480 + htObjs[i].lifeSpan * 20.0f, 32, ColorAlpha(ORANGE, htObjs[i].lifeSpan/3.0f));
+            break;
+        case 3:
+            DrawText("MISS", 10, 480 + htObjs[i].lifeSpan * 20.0f, 32, ColorAlpha(RED, htObjs[i].lifeSpan/3.0f));
+            break;
+        default:
+            break;
+        }
+
+        
+    }
+    
     EndDrawing();
+}
+
+//?musik
+void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
+{
+    music = LoadMusicStream(path);
+    bm.LoadBeatMap(bPath); //ska ske async från main eller sitta i en vector. Varje gång ny rad läses ur csv, knuffa in i vector
+    PlayMusicStream(music);
+    StartTimer(&songTimer, GetMusicTimeLength(music)); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
+    std::cout << GetMusicTimeLength(music);
+    std::cout << "\n\n\nHej, beatmappen är laddad\n";
+
 }
 
 //?musik
@@ -158,6 +200,9 @@ void drawMenu()
             //?musik
             //todo: switch för att välja låt
             PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");
+            //?musik
+            //todo: switch för att välja låt
+            PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");
         }
     }
 
@@ -167,6 +212,18 @@ void drawMenu()
 
     EndDrawing();
 }
+//?musik
+void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
+{
+    music = LoadMusicStream(path);
+    bm.LoadBeatMap(bPath); //ska ske async från main eller sitta i en vector. Varje gång ny rad läses ur csv, knuffa in i vector
+    PlayMusicStream(music);
+    StartTimer(&songTimer, GetMusicTimeLength(music)); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
+    std::cout << GetMusicTimeLength(music);
+    std::cout << "\n\n\nHej, beatmappen är laddad\n";
+
+}
+
 
 int main()
 {
@@ -190,8 +247,10 @@ int main()
 
     Player playerObject; //skapa spelaren
     std::vector<Scenery> sceneryObjects = {};
-    std::vector<Note> noteObjects = {}; //lista över alla dekorationsobjekt
+    std::vector<Note> noteObjects = {};
+    std::vector<HitText> hitObjects = {}; //lista över alla dekorationsobjekt
     sceneryObjects.push_back(Scenery(0)); //lägg till ett nytt dekorationsobjekt i listan
+    noteObjects.push_back(Note(1));
 
     loadAssets();
 
@@ -246,26 +305,31 @@ int main()
                         
                         if(nt.notePosition.y > -0.5f && nt.notePosition.y < 0.0f)//tidig träff
                         {
+                            hitObjects.push_back(HitText(0));
                             std::cout << "EARLY" << std::endl;
                             nt.outOfBounds = true;
                         }
                         else if(nt.notePosition.y > -1.5f && nt.notePosition.y < -0.5f)//perfekt träf
                         {
+                            hitObjects.push_back(HitText(1));
                             std::cout << "PERFEKT" << std::endl;
                             nt.outOfBounds = true;
                         }
                         else if(nt.notePosition.y > -2.0f && nt.notePosition.y < -1.5f) //sen träff
                         {
+                            hitObjects.push_back(HitText(2));
                             std::cout << "LATE" << std::endl;
                             nt.outOfBounds = true;
                         }
                         else
                         {
+                            hitObjects.push_back(HitText(3));
                             std::cout << "MISS" << std::endl;
                         }
                     }
                     else
                     {
+                        hitObjects.push_back(HitText(3));
                         std::cout << "MISS" << std::endl;
                     }
                 }
