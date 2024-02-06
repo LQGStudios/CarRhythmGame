@@ -3,6 +3,7 @@
 #include "libs/raymath.h"
 #include <list>
 #include <fstream> //för att läsa csv med beatmaps
+#include <iostream>
 #include <string>
  
 typedef struct Timer {
@@ -40,17 +41,18 @@ struct CurrentSong //Värdena i denna struct ska ändras medans man spelar
         double songPosition; //time
         int notesHit;
         int notesMissed;
+        int notesInARow; //nollställ när en not har nått skärmens nedkant
         
     
 };
 struct CSVNote
 {
     int lane;
-    double time;
-    CSVNote(float _time, int _lane)
+    double time; 
+    CSVNote(int _lane,double _time)
     {
-        time = _time;
         lane = _lane;
+        time = _time;
     }
 };
 
@@ -62,10 +64,12 @@ struct Beatmap
         Timer timer1;
         double currTime;
         float beatPosition; //relativ till songPosition
+        int currentNoteInSong = 0;
         
         std::vector<CSVNote> lt = {}; //lane, time, datan byts ut mot det som står i csv
 
         //läser in en csv-fil med beatmappen i. Denna beatmap kommer från ett excel-dokument med timing och annan notinformation
+        //?kodstandard för csv är att ha 5värdesiffror på tiden när noten ska sättas ut på första taktslaget, annars 4 värdesiffrorshare  
         //csv to vector converter
         void LoadBeatMap(const char*bPath) 
         {
@@ -77,52 +81,52 @@ struct Beatmap
                 std::cerr << "Kan inte öppna filen" << bPath <<std::endl; //skickar ett smidigt errormeddelande
             }
             
-            int i = 0; //för denna while-loop
             while (fullBeatmap.peek() != EOF) //medans vi läser filen, innan den har tagit slut alltså, kollar vi på tabellen rad för rad
             {
-                std::string lt; //något av de 2 värdena i csv-filen(l står för värdet i kolumn 0, vilken fil på vägen (0-4), t står för tiden i sekunder då noten ska dyka upp)
+                std::string line; //något av de 2 värdena i csv-filen(l står för värdet i kolumn 0, vilken fil på vägen (0-4), t står för tiden i sekunder då noten ska dyka upp)
+                std::string s; //
                 //läser en rad av beatmappen
-                getline(fullBeatmap, lt, ',');
-                std::cout << lt <<std::endl;
+                getline(fullBeatmap, line, '\n'); //tolkar en line som texten mellan newlineo och nästa newline
+                s = line.substr(2,line.length()); //s är den delen av raden efter kommatecknet. 2 för att lane och komma är 2 karaktärer
 
-                if (i < 1)
-                {
-                    //talet är i första kolumnen, ska då behandlas som lane
-                    //l= lane
-                    l = std::stoi(lt);
-                    //std::cout << "reading lane!" << l;
-                }
-                else
-                {
-                    //t = time
-                    t = std::stod(lt);
-                    i= -1;//så att i ska bli 0 igen när loopen börjar om
-                    //std::cout << "reading time, " << t;
-                    
-                } 
-                i++;
-                lt.push_back(l);
-                lt.push_back(t);   
-                //StartTimer(&timer1, t); 
+                
+                
+                //l = lane
+                l = std::stoi(line.substr(0,1));
+                //std::cout << "reading " << s << " time!" << t;
+                // t = time
+                t = std::stod(s);               
+                
+                lt.push_back(CSVNote(l,t));
+                std::cout << "lane to place in: "<< lt[lt.size() - 1].lane << std::endl; //outputar den senast tillagda i lane
+
                 
             }
             
+            std::cout << "beatmappen e slut";
             fullBeatmap.close();
-            std::cout << "beatmappen är slut\n";
         }
-        // kalla på i main, vid update music stream
-        bool ShouldPlaceNote(Timer timer) //&tecken clutch
-        {
-            for(int i = 1; i < lt.size(); i++) //delar med två för det finns två kolumner
-            {
 
-                if(GetElapsed(timer) == lt[i].time)
-                {
-                    return true;
-                }
+        int ShouldPlaceNote(double elapsed) // kalla på i main, vid update music stream
+        {
+            //todo: ingen for loop här. Börja med att bara kolla om [0] av lt
+            //todo: matchar tiden. När den har returnat true en gång, gå vidare till [1] av lt och så vidare
+            //todo: laborera med margin. Den ska vara ca 1/60 av en sekund iom 60 fps target
+            float margin = 0.0167f;
+
+            if(lt[currentNoteInSong].time - margin < elapsed && elapsed < lt[currentNoteInSong].time + margin)
+            {
+                return lt[currentNoteInSong++].lane; //säger till vilken lane
             }
 
-            return false;
+            /*
+            for(std::size_t i = 1; i < lt.size(); i++) //man kan inte jämföra en int med  lt.size så därför är "i" en "size_t"
+            {
+                //std::cout << lt[i].time << std::endl;
+                return false;
+            }
+            */
+            return -1; //-1 motsvarar false
         }
 
 };
