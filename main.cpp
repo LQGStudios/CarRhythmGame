@@ -54,6 +54,7 @@ void loadAssets()
     sceneryModels[1] = LoadModelFromMesh(GenMeshCube(0.5f, 3.0f, 2.0f));
     playerModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f));
     moveSound = LoadSound("assets/104026__rutgermuller__tires-squeaking.wav");
+    SetSoundVolume(moveSound, 0.1f);
 
     grassPlane = LoadModelFromMesh(GenMeshPlane(60.0f, 50.0f, 50, 50));
     SetMaterialTexture(&grassPlane.materials[0], MATERIAL_MAP_DIFFUSE, grassTexture);
@@ -153,6 +154,18 @@ void drawWorld(Camera3D& cam, Player& plObj, std::vector<Scenery>& scObjs, std::
     EndDrawing();
 }
 
+//?musik
+void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
+{
+    music = LoadMusicStream(path);
+    bm.LoadBeatMap(bPath); //ska ske async från main eller sitta i en vector. Varje gång ny rad läses ur csv, knuffa in i vector
+    PlayMusicStream(music);
+    StartTimer(&songTimer, GetMusicTimeLength(music)); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
+    std::cout << GetMusicTimeLength(music);
+    std::cout << "\n\n\nHej, beatmappen är laddad\n";
+
+}
+
 void drawMenu()
 {
     //setup
@@ -171,6 +184,9 @@ void drawMenu()
         {
             activeScene = 1;
             transition = false;
+            //?musik
+            //todo: switch för att välja låt
+            PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");
         }
     }
 
@@ -180,18 +196,6 @@ void drawMenu()
 
     EndDrawing();
 }
-//?musik
-void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
-{
-    music = LoadMusicStream(path);
-    bm.LoadBeatMap(bPath); //ska ske async från main eller sitta i en vector. Varje gång ny rad läses ur csv, knuffa in i vector
-    PlayMusicStream(music);
-    StartTimer(&songTimer, GetMusicTimeLength(music)); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
-    std::cout << GetMusicTimeLength(music);
-    std::cout << "\n\n\nHej, beatmappen är laddad\n";
-
-}
-
 
 
 int main()
@@ -205,9 +209,6 @@ int main()
     InitAudioDevice();
     SetTargetFPS(60);
 
-    //?musik
-    //todo: switch för att välja låt
-    PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");
 
     //skapa en ny kamera
     Camera3D camera = {0};
