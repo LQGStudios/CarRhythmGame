@@ -196,6 +196,17 @@ void drawMenu()
 
     EndDrawing();
 }
+//?musik
+void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
+{
+    music = LoadMusicStream(path);
+    bm.LoadBeatMap(bPath); //ska ske async från main eller sitta i en vector. Varje gång ny rad läses ur csv, knuffa in i vector
+    PlayMusicStream(music);
+    StartTimer(&songTimer, GetMusicTimeLength(music)); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
+    std::cout << GetMusicTimeLength(music);
+    std::cout << "\n\n\nHej, beatmappen är laddad\n";
+
+}
 
 
 int main()
@@ -209,6 +220,9 @@ int main()
     InitAudioDevice();
     SetTargetFPS(60);
 
+    //?musik
+    //todo: switch för att välja låt
+    PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");
 
     //skapa en ny kamera
     Camera3D camera = {0};
