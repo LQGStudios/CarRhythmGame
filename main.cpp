@@ -54,7 +54,7 @@ void loadAssets()
     sceneryModels[1] = LoadModelFromMesh(GenMeshCube(0.5f, 3.0f, 2.0f));
     playerModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f));
     moveSound = LoadSound("assets/104026__rutgermuller__tires-squeaking.wav");
-    SetSoundVolume(moveSound, 0.1f);
+    //SetSoundVolume(moveSound, 0.01f);
     //SetSoundVolume(moveSound, 0.5);// justerar volymen (mellan 0 och 1)
 
     grassPlane = LoadModelFromMesh(GenMeshPlane(60.0f, 50.0f, 50, 50));
@@ -167,18 +167,6 @@ void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle
 
 }
 
-//?musik
-void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
-{
-    music = LoadMusicStream(path);
-    bm.LoadBeatMap(bPath); //ska ske async från main eller sitta i en vector. Varje gång ny rad läses ur csv, knuffa in i vector
-    PlayMusicStream(music);
-    StartTimer(&songTimer, GetMusicTimeLength(music)); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
-    std::cout << GetMusicTimeLength(music);
-    std::cout << "\n\n\nHej, beatmappen är laddad\n";
-
-}
-
 void drawMenu()
 {
     //setup
@@ -212,17 +200,6 @@ void drawMenu()
 
     EndDrawing();
 }
-//?musik
-void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
-{
-    music = LoadMusicStream(path);
-    bm.LoadBeatMap(bPath); //ska ske async från main eller sitta i en vector. Varje gång ny rad läses ur csv, knuffa in i vector
-    PlayMusicStream(music);
-    StartTimer(&songTimer, GetMusicTimeLength(music)); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
-    std::cout << GetMusicTimeLength(music);
-    std::cout << "\n\n\nHej, beatmappen är laddad\n";
-
-}
 
 
 int main()
@@ -250,7 +227,6 @@ int main()
     std::vector<Note> noteObjects = {};
     std::vector<HitText> hitObjects = {}; //lista över alla dekorationsobjekt
     sceneryObjects.push_back(Scenery(0)); //lägg till ett nytt dekorationsobjekt i listan
-    noteObjects.push_back(Note(1));
 
     loadAssets();
 
@@ -321,16 +297,6 @@ int main()
                             std::cout << "LATE" << std::endl;
                             nt.outOfBounds = true;
                         }
-                        else
-                        {
-                            hitObjects.push_back(HitText(3));
-                            std::cout << "MISS" << std::endl;
-                        }
-                    }
-                    else
-                    {
-                        hitObjects.push_back(HitText(3));
-                        std::cout << "MISS" << std::endl;
                     }
                 }
                 if(nt.outOfBounds == true)
@@ -339,7 +305,7 @@ int main()
                 }
             }
             
-            drawWorld(camera, playerObject, sceneryObjects, noteObjects); //rita världen
+            drawWorld(camera, playerObject, sceneryObjects, noteObjects, hitObjects); //rita världen
 
             //?Musik
             UpdateMusicStream(music);   // Ser till att musiken fortsätter spela

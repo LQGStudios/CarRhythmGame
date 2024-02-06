@@ -41,6 +41,7 @@ struct CurrentSong //Värdena i denna struct ska ändras medans man spelar
         double songPosition; //time
         int notesHit;
         int notesMissed;
+        int notesInARow; //nollställ när en not har nått skärmens nedkant
         
     
 };
