@@ -107,7 +107,7 @@ void drawWorld(Camera3D& cam, Player& plObj, std::vector<Scenery>& scObjs, std::
     plObj.drawPlayer(playerModel);
 
     BeginShaderMode(noteShader); //noter har inte en inbyggd shader och därför behövs shadermode
-        for (int i = 0; i < (int)ntObjs.size(); i++)
+        for (int i = (int)ntObjs.size() - 1; i >= 0; i--)
         {
             //rita noter
             DrawBillboard(cam, noteTexture, (Vector3){ntObjs[i].notePosition.x, 0, ntObjs[i].notePosition.y}, 2.0f, WHITE);
