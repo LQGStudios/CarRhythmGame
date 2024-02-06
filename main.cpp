@@ -125,6 +125,18 @@ void drawWorld(Camera3D& cam, Player& plObj, std::vector<Scenery>& scObjs, std::
     EndDrawing();
 }
 
+//?musik
+void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
+{
+    music = LoadMusicStream(path);
+    bm.LoadBeatMap(bPath); //ska ske async från main eller sitta i en vector. Varje gång ny rad läses ur csv, knuffa in i vector
+    PlayMusicStream(music);
+    StartTimer(&songTimer, GetMusicTimeLength(music)); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
+    std::cout << GetMusicTimeLength(music);
+    std::cout << "\n\n\nHej, beatmappen är laddad\n";
+
+}
+
 void drawMenu()
 {
     //setup
@@ -143,6 +155,9 @@ void drawMenu()
         {
             activeScene = 1;
             transition = false;
+            //?musik
+            //todo: switch för att välja låt
+            PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");
         }
     }
 
@@ -152,19 +167,6 @@ void drawMenu()
 
     EndDrawing();
 }
-//?musik
-void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
-{
-    music = LoadMusicStream(path);
-    bm.LoadBeatMap(bPath); //ska ske async från main eller sitta i en vector. Varje gång ny rad läses ur csv, knuffa in i vector
-    PlayMusicStream(music);
-    StartTimer(&songTimer, GetMusicTimeLength(music)); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
-    std::cout << GetMusicTimeLength(music);
-    std::cout << "\n\n\nHej, beatmappen är laddad\n";
-
-}
-
-
 
 int main()
 {
@@ -176,10 +178,6 @@ int main()
     InitWindow(screenWidth, screenHeight, "Rythm Rally");
     InitAudioDevice();
     SetTargetFPS(60);
-
-    //?musik
-    //todo: switch för att välja låt
-    PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");
 
     //skapa en ny kamera
     Camera3D camera = {0};
@@ -278,21 +276,20 @@ int main()
             }
             
             drawWorld(camera, playerObject, sceneryObjects, noteObjects); //rita världen
+
+            //?Musik
+            UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
+            int laneToPlace = bm.ShouldPlaceNote(GetElapsed(songTimer));
+            if(laneToPlace != -1) //om tiden är inom en viss  marginal, sätt ut not
+            {
+                //?how it's done:
+                
+                noteObjects.push_back(Note(laneToPlace)); 
+                std::cout << "actually placed note lmao imagine that" << std::endl;
+            }
         }
         
-        //?Musik
-        UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
-        //std::cout << GetElapsed(songTimer) << std::endl;
-        if(bm.ShouldPlaceNote(GetElapsed(songTimer))) //om tiden är inom en viss  marginal, sätt ut not
-
-        {
-            //?how it's done:
-            noteObjects.push_back(Note(1)); 
-            std::cout << "actually placed note lmao" << std::endl;
-        }
-            //std::cout << "not the time to place a note" << std::endl;
-        /*
-        */
+        
 
     }
 
