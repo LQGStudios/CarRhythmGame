@@ -93,7 +93,6 @@ struct Beatmap
                 
                 //l = lane
                 l = std::stoi(line.substr(0,1));
-                //std::cout << "reading " << s << " time!" << t;
                 // t = time
                 t = std::stod(s);               
                 
@@ -114,18 +113,10 @@ struct Beatmap
             //todo: laborera med margin. Den ska vara ca 1/60 av en sekund iom 60 fps target
             float margin = 0.0167f;
 
-            if(lt[currentNoteInSong].time - margin < elapsed && elapsed < lt[currentNoteInSong].time + margin)
+            if(lt[currentNoteInSong].time - margin < (elapsed + 2.31674) && (elapsed + 2.31674) < lt[currentNoteInSong].time + margin)
             {
                 return lt[currentNoteInSong++].lane; //säger till vilken lane
             }
-
-            /*
-            for(std::size_t i = 1; i < lt.size(); i++) //man kan inte jämföra en int med  lt.size så därför är "i" en "size_t"
-            {
-                //std::cout << lt[i].time << std::endl;
-                return false;
-            }
-            */
             return -1; //-1 motsvarar false
         }
 

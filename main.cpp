@@ -25,6 +25,8 @@ double songLength;//assets for the world
 unsigned int cycles = 0;
 bool transition = false;
 int activeScene = 0;
+float scrollValue = 0;
+int scrollLoc;
 Texture2D grassTexture;
 Texture2D roadTexture;
 Texture2D skyTexture;
@@ -54,16 +56,16 @@ void loadAssets()
     sceneryModels[1] = LoadModelFromMesh(GenMeshCube(0.5f, 3.0f, 2.0f));
     playerModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f));
     moveSound = LoadSound("assets/104026__rutgermuller__tires-squeaking.wav");
-    //SetSoundVolume(moveSound, 0.01f);
-    //SetSoundVolume(moveSound, 0.5);// justerar volymen (mellan 0 och 1)
+    SetSoundVolume(moveSound, 0.005f);
 
     grassPlane = LoadModelFromMesh(GenMeshPlane(60.0f, 50.0f, 50, 50));
     SetMaterialTexture(&grassPlane.materials[0], MATERIAL_MAP_DIFFUSE, grassTexture);
     asphaltPlane = LoadModelFromMesh(GenMeshPlane(9.5f, 50.0f, 50, 50));
     SetMaterialTexture(&asphaltPlane.materials[0], MATERIAL_MAP_DIFFUSE, roadTexture);
-    worldShader = LoadShader("assets/base.vs",0);
+    worldShader = LoadShader("assets/base.vs", "assets/scroll.fs");
     grassPlane.materials[0].shader = worldShader;
     asphaltPlane.materials[0].shader = worldShader;
+    scrollLoc = GetShaderLocation(worldShader, "uTime");
 
     objectShader = LoadShader("assets/objects.vs",0);
     sceneryModels[0].materials[0].shader = objectShader;
@@ -101,6 +103,8 @@ void drawWorld(Camera3D& cam, Player& plObj, std::vector<Scenery>& scObjs, std::
     BeginMode3D(cam);
 
     //rita världen
+    scrollValue += 0.2f * GetFrameTime();
+    SetShaderValue(worldShader, scrollLoc, &scrollValue, SHADER_UNIFORM_FLOAT);
     DrawModel(grassPlane, (Vector3){0.0f,-0.6f,-5.0f}, 1.0f, WHITE);
     DrawModel(asphaltPlane, (Vector3){0.0f,-0.59f,-5.0f}, 1.0f, WHITE);
 
