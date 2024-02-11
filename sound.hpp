@@ -31,6 +31,20 @@ double GetElapsed(Timer timer)
 struct Song 
 {   
     Music music;
+    Timer closeTimer;
+    const char* errText = "Kunde inte hitta den låten \n(kolla om beatmap och ljudfil har rätt namn och ligger i rätt mapp?)";
+    void SongError()
+    {
+        std::cerr << errText << std::endl;
+        DrawText(errText, GetScreenWidth()/2, GetScreenHeight()/2, 30, RED);
+
+        StartTimer(&closeTimer, 5.0f);
+
+        if (TimerDone(closeTimer))
+        {
+            CloseWindow();
+        }
+    }
 
 };
 struct CurrentSong //Värdena i denna struct ska ändras medans man spelar 
