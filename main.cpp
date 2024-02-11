@@ -332,7 +332,6 @@ int main()
                 nt.moveNote();
                 if(playerPressedHit == true)
                 {
-
                     /*
 
                     y>0 miss
