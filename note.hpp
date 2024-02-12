@@ -5,7 +5,7 @@
 struct HitText
 {
     public:
-        float lifeSpan = 3.0f;
+        float lifeSpan = 6.0f;
         int type;
 
         HitText(int _type)
@@ -21,7 +21,7 @@ struct Note
         Vector2 notePosition =  (Vector2){1.5f, 27.0f};
         bool outOfBounds = false;
         
-        void moveNote()
+        bool moveNote()
         {
             //Z positionen
             notePosition.y -= 0.2f;
@@ -30,6 +30,7 @@ struct Note
             {
                 outOfBounds = true;
             }
+            return outOfBounds;
         }
         
         Note(int lane) //ny dekoration

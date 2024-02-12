@@ -8,6 +8,7 @@ attribute vec4 vertexColor;
 
 // Input uniform values
 uniform mat4 mvp;
+uniform float uTime;
 
 // Output vertex attributes (to fragment shader)
 varying vec2 fragTexCoord;
