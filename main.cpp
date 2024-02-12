@@ -20,6 +20,8 @@ CurrentSong cs;
 Timer t;
 Timer songTimer;
 double songLength;//assets for the world
+const char* titles[] = {"1: 140 kph\n", "2: Song 2\n", "3: Song 3\n", "4: Song 4\n", "5: Song 5\n"};
+int scores[] = {0, 0, 0};
 
 //misc variabler
 int selectedSong = 0;
@@ -167,24 +169,38 @@ void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle
     std::cout << "\n\n\nHej, beatmappen är laddad\n";
 
 }
+void DrawHighScores(int X, int Y, int title)
+{
+    DrawText("High Scores:\n",1.5*X, Y, 40, GOLD);
+    for (int i = 0; i < 3; i++)
+    {
+        std::string text = std::to_string(scores[i]) + " points";
+        DrawText(text.c_str(),1.5*X, Y + 40*(i+1), 40, LIGHTGRAY);
+    }
+    
+}
 
 void drawMenu(int keyPress)
 {
     //setup
     BeginDrawing();
     ClearBackground(RAYWHITE);
+
+    int menuX = GetScreenWidth()/3;
+    int menuY = 350;
     //text, x, y, fontsize, color
     DrawText("RYTHM\nRALLY", 500, 50 + 10 * sin(cycles * PI/180), 80, DARKGRAY);
-    const char* titles[] = {"1: 140 kph\n", "2: Song 2\n", "3: Song 3\n", "4: Song 4\n", "5: Song 5\n"};
     for (int i = 0; i < 5; i++)
     {
-        DrawText(titles[i], 10, 240 + 40*i, 40, DARKGRAY);
+        DrawText(titles[i], menuX, menuY + 40*i, 40, DARKGRAY);
         if (i == keyPress)
         {
-            DrawText(titles[i], 10, 240 + 40*i, 40, GOLD);
+            DrawText(titles[i], menuX, menuY + 40*i, 40, GOLD);
 
         }
     }
+
+    DrawHighScores(menuX, menuY, keyPress);
 
     if(transition == true)
     {
@@ -332,7 +348,6 @@ int main()
                 nt.moveNote();
                 if(playerPressedHit == true)
                 {
-
                     /*
 
                     y>0 miss

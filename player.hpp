@@ -9,6 +9,8 @@ struct Player
         int animationDirection = 1;
         bool animatorActive = false;
         int animationCycles = 0;
+        Sound QEsound = LoadSound("assets/QEsound.wav");
+
         
     public: 
         
@@ -84,6 +86,7 @@ struct Player
 
             if(IsKeyPressed(KEY_E) || IsKeyPressed(KEY_Q))
             {
+                PlaySound(QEsound);
                 return true;
             }
 
