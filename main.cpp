@@ -18,6 +18,7 @@ Beatmap bm;
 CurrentSong cs;
 Timer t;
 Timer songTimer;
+Song song;
 const char* titles[] = {"1: 140 kph\n", "2: Song 2\n", "3: Song 3\n", "4: Song 4\n", "5: Song 5\n"};
 int scores[] = {0, 0, 0};
 
@@ -204,7 +205,25 @@ void DrawHighScores(int X, int Y, int title)
     
 }
 
-void drawMenu(int keyPress)
+void DrawSettings()
+{
+    BeginDrawing();
+    ClearBackground(DARKGRAY);
+    /*
+    int sX = GetScreenWidth()/3;
+    int sY = 350;
+    std::string text = "Ljudfördröjning (i millisekunder)\n" + std::to_string(bm.delay);
+    
+    DrawText(text.c_str(), sX, sY + 40, 40, BLACK);
+    */
+
+
+    
+    DrawFPS(10, 10);
+    EndDrawing();
+}
+
+void DrawMenu(int keyPress)
 {
     //setup
     BeginDrawing();
@@ -214,12 +233,23 @@ void drawMenu(int keyPress)
     int menuY = 350;
     //text, x, y, fontsize, color
     DrawText("RYTHM\nRALLY", 500, 50 + 10 * sin(cycles * PI/180), 80, DARKGRAY);
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 6; i++)
     {
-        DrawText(titles[i], menuX, menuY + 40*i, 40, DARKGRAY);
-        if (i == keyPress)
+        if (i >=5) //om inställningar är valt
         {
-            DrawText(titles[i], menuX, menuY + 40*i, 40, GOLD);
+            DrawText("Inställningar", menuX, menuY + 40*i, 40, DARKGRAY);
+            if (i == keyPress)
+            {
+                DrawText("Inställningar", menuX, menuY + 40*i, 40, GOLD);
+            }
+        }
+        else
+        {
+            DrawText(titles[i], menuX, menuY + 40*i, 40, DARKGRAY);
+            if (i == keyPress)
+            {
+                DrawText(titles[i], menuX, menuY + 40*i, 40, GOLD);
+            }
 
         }
     }
@@ -253,8 +283,11 @@ void drawMenu(int keyPress)
                 break;
             case 4:
                 song.SongError();
-                
                 break;
+            case 5:
+                DrawSettings();
+                break;
+
             default:
                 song.SongError();
                 
@@ -269,7 +302,6 @@ void drawMenu(int keyPress)
 
     EndDrawing();
 }
-
 
 void DrawResults()
 {
@@ -335,24 +367,26 @@ int main()
             case 53: 
                 selectedSong = 4;
                 break;
+            case 54: 
+                selectedSong = 5;
+                break;
             case 265: //keycode up
                 selectedSong--;
                 if (selectedSong < 0)
                 {
-                    selectedSong = 4;
+                    selectedSong = 5;
                 }
-                
                 break;
             case 264: //keycode down
                 selectedSong++;
-                if (selectedSong > 4)
+                if (selectedSong > 5)
                 {
                     selectedSong = 0;
                 }
                 break;
                         
             default:
-                drawMenu(selectedSong);
+                DrawMenu(selectedSong);
                 break;
             }
 
@@ -445,7 +479,6 @@ int main()
             if(laneToPlace != -1) //om tiden är inom en viss  marginal, sätt ut not
             {
                 //?how it's done:
-                
                 noteObjects.push_back(Note(laneToPlace)); 
                 std::cout << "actually placed note lmao imagine that" << std::endl;
             }
