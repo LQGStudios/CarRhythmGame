@@ -50,13 +50,13 @@ void loadAssets()
     skyTexture = LoadTexture("assets/Fading_Sky-Sunset_02-1024x512.png");
 
     noteTexture = LoadTexture("assets/note.png");
-    sceneryModels[0][0] = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f)); 
-    sceneryModels[0][1] = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f)); 
+    sceneryModels[0][0] = LoadModel("assets/windmillMain.glb"); 
+    sceneryModels[0][1] = LoadModel("assets/windmillWalls.glb"); 
 
     sceneryModels[1][0] = LoadModel("assets/ladaMain.glb");
     sceneryModels[1][1] = LoadModel("assets/ladaWalls.glb");
 
-    playerModel = LoadModel("assets/az1_01.glb");
+    playerModel = LoadModel("assets/testCar.glb");
     moveSound = LoadSound("assets/104026__rutgermuller__tires-squeaking.wav");
     SetSoundVolume(moveSound, 0.005f);
 
@@ -104,7 +104,7 @@ void unloadAssets()
 }
 
 
-void drawWorld(Camera3D& cam, Player& plObj, std::vector<Scenery>& scObjs, std::vector<Note>& ntObjs, std::vector<HitText>& htObjs)
+void drawWorld(Camera3D& cam, Player& plObj, Scenery& scObj, std::vector<Note>& ntObjs, std::vector<HitText>& htObjs)
 {
     //setup
     BeginDrawing();
@@ -122,10 +122,18 @@ void drawWorld(Camera3D& cam, Player& plObj, std::vector<Scenery>& scObjs, std::
     plObj.drawPlayer(playerModel);
 
     //rita dekorationer
-        sceneryModels[scObjs[0].selectedModel][0].transform = MatrixTranslate(scObjs[0].sceneryPosition.x, -1.0f, scObjs[0].sceneryPosition.y);
-        sceneryModels[scObjs[0].selectedModel][1].transform = MatrixTranslate(scObjs[0].sceneryPosition.x, -1.0f, scObjs[0].sceneryPosition.y);
-        DrawModel(sceneryModels[scObjs[0].selectedModel][0], (Vector3){0.0f,0.0f,0.0f}, 1.0f, WHITE);
-        DrawModel(sceneryModels[scObjs[0].selectedModel][1], (Vector3){0.0f,0.0f,0.0f}, 1.0f, RED);
+    sceneryModels[scObj.selectedModel][0].transform = MatrixTranslate(scObj.sceneryPosition.x, -1.0f, scObj.sceneryPosition.y);
+    sceneryModels[scObj.selectedModel][1].transform = MatrixTranslate(scObj.sceneryPosition.x, -1.0f, scObj.sceneryPosition.y);
+    if(scObj.selectedModel == 0)
+    {
+        DrawModel(sceneryModels[scObj.selectedModel][0], (Vector3){0.0f,0.0f,0.0f}, 1.0f, GRAY);
+        DrawModel(sceneryModels[scObj.selectedModel][1], (Vector3){0.0f,0.0f,0.0f}, 1.0f, BROWN);
+    }
+    else if(scObj.selectedModel == 1)
+    {
+        DrawModel(sceneryModels[scObj.selectedModel][0], (Vector3){0.0f,0.0f,0.0f}, 1.0f, WHITE);
+        DrawModel(sceneryModels[scObj.selectedModel][1], (Vector3){0.0f,0.0f,0.0f}, 1.0f, RED);
+    }
 
     BeginShaderMode(noteShader); //noter har inte en inbyggd shader och därför behövs shadermode
         for (int i = (int)ntObjs.size() - 1; i >= 0; i--)
@@ -249,10 +257,9 @@ int main()
     
 
     Player playerObject; //skapa spelaren
-    std::vector<Scenery> sceneryObjects = {};
+    Scenery sceneryObject = Scenery(1);
     std::vector<Note> noteObjects = {};
     std::vector<HitText> hitObjects = {}; //lista över alla dekorationsobjekt
-    sceneryObjects.push_back(Scenery(1)); //lägg till ett nytt dekorationsobjekt i listan
 
     loadAssets();
 
@@ -276,15 +283,12 @@ int main()
             bool playerPressedHit = playerObject.playerInput(moveSound); 
             
             //flytta varje dekoration och kontrollera om den fortfarande behövs
-            for (int i = 0; i < (int)sceneryObjects.size(); i++)
+            sceneryObject.moveScenery();
+            if(sceneryObject.outOfBounds == true && (int)GetElapsed(songTimer) % 4 == 0 && GetRandomValue(0,1) == 0)
             {
-                Scenery& sc = sceneryObjects[i];
-                sc.moveScenery();
-                if(sc.outOfBounds == true)
-                {
-                    sc = Scenery(1);
-                }
+                sceneryObject = Scenery(GetRandomValue(0,1));
             }
+            
             
             for (int i = (int)noteObjects.size() - 1; i >= 0; i--)
             {
@@ -344,12 +348,11 @@ int main()
                 }
             }
             
-            drawWorld(camera, playerObject, sceneryObjects, noteObjects, hitObjects); //rita världen
+            drawWorld(camera, playerObject, sceneryObject, noteObjects, hitObjects); //rita världen
 
             //?Musik
             UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
             int laneToPlace = bm.ShouldPlaceNote(GetElapsed(songTimer));
-            std::cout << bm.lt.size() << "  " << cs.notesMissed + cs.earlyHit + cs.perfectHit + cs.lateHit << std::endl;
             if((int)bm.lt.size() == cs.notesMissed + cs.earlyHit + cs.perfectHit + cs.lateHit)
             {
                 activeScene = 2;
