@@ -14,12 +14,10 @@
 
 //?musik
 Music music; //path till låten
-Song song;
 Beatmap bm;
 CurrentSong cs;
 Timer t;
 Timer songTimer;
-double songLength;//assets for the world
 
 //misc variabler
 unsigned int cycles = 0;
@@ -53,8 +51,8 @@ void loadAssets()
 
     noteTexture = LoadTexture("assets/note.png");
     sceneryModels[0] = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f)); 
-    sceneryModels[1] = LoadModelFromMesh(GenMeshCube(0.5f, 3.0f, 2.0f));
-    playerModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f));
+    sceneryModels[1] = LoadModel("assets/Lada.glb");
+    playerModel = LoadModel("assets/az1_01.glb");
     moveSound = LoadSound("assets/104026__rutgermuller__tires-squeaking.wav");
     SetSoundVolume(moveSound, 0.005f);
 
@@ -70,6 +68,7 @@ void loadAssets()
     objectShader = LoadShader("assets/objects.vs",0);
     sceneryModels[0].materials[0].shader = objectShader;
     sceneryModels[1].materials[0].shader = objectShader;
+    sceneryModels[1].materials[1].shader = objectShader;
 
     noteShader = LoadShader("assets/notes.vs",0);
 }
@@ -120,16 +119,16 @@ void drawWorld(Camera3D& cam, Player& plObj, std::vector<Scenery>& scObjs, std::
     EndShaderMode();
     
     //rita dekorationer
-    sceneryModels[scObjs[0].selectedModel].transform = MatrixTranslate(scObjs[0].sceneryPosition.x, 0.0f, scObjs[0].sceneryPosition.y);
-    DrawModel(sceneryModels[scObjs[0].selectedModel], (Vector3){0.0f,0.0f,0.0f}, 1.0f, BLUE);
-
+    /*FIXA DET HÄR NÅGON GÅNG, VÄNTA PÅ ETT MIRAKEL*/
+        //sceneryModels[scObjs[0].selectedModel].transform = MatrixTranslate(scObjs[0].sceneryPosition.x * 20.0f, 0.0f, scObjs[0].sceneryPosition.y * 20.0f);
+        //DrawModel(sceneryModels[scObjs[0].selectedModel], (Vector3){0.0f,0.0f,0.0f}, 0.05f, BLUE);
     //Rita FPS och avsluta ritande
     EndMode3D();
     DrawFPS(10, 10);
 
     for (int i = (int)htObjs.size() - 1; i >= 0; i--)
     {
-        htObjs[i].lifeSpan -= GetFrameTime() * 4.0f;
+        htObjs[i].lifeSpan -= GetFrameTime() * 8.0f;
         if(htObjs[i].lifeSpan < 0)
         {
             htObjs.erase(htObjs.begin() + i);
@@ -192,9 +191,6 @@ void drawMenu()
             //?musik
             //todo: switch för att välja låt
             PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");
-            //?musik
-            //todo: switch för att välja låt
-            PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");
         }
     }
 
@@ -202,6 +198,19 @@ void drawMenu()
 
     DrawFPS(10, 10);
 
+    EndDrawing();
+}
+
+
+void DrawResults()
+{
+    BeginDrawing();
+    ClearBackground(WHITE);
+    DrawText(TextFormat("Highest combo: %d notes", cs.highestCombo), 500, 200, 32, BLACK);
+    DrawText(TextFormat("Early: %d%%", (int)floor((float)cs.earlyHit/(float)bm.lt.size() * 100)), 500, 250, 32, BLACK);
+    DrawText(TextFormat("Perfect: %d%%", (int)floor((float)cs.perfectHit/(float)bm.lt.size() * 100)), 500, 290, 32, BLACK);
+    DrawText(TextFormat("Late: %d%%", (int)floor((float)cs.lateHit/(float)bm.lt.size() * 100)), 500, 330, 32, BLACK);
+    DrawText(TextFormat("Missed: %d%%", (int)floor((float)cs.notesMissed/(float)bm.lt.size() * 100)), 500, 370, 32, BLACK);
     EndDrawing();
 }
 
@@ -267,18 +276,22 @@ int main()
             for (int i = (int)noteObjects.size() - 1; i >= 0; i--)
             {
                 Note& nt = noteObjects[i];
-                nt.moveNote();
-                if(playerPressedHit == true)
+                if(nt.moveNote() == true)
+                {
+                    hitObjects.push_back(HitText(3));
+                    std::cout << "Miss" << std::endl;
+                    cs.notesInARow = 0;
+                    cs.notesMissed += 1;
+                }
+                else if(playerPressedHit == true)
                 {
 
                     /*
-
                     y>0 miss
                     0 > y > -0.5 tidig
                     -0.5 > y > -1.5 perfekt 
                     -1.5 > y > -2.0 sen
                     -2.0 > y miss
-
                     */
                     if(playerObject.playerXPosition == nt.notePosition.x)
                     {
@@ -288,18 +301,27 @@ int main()
                             hitObjects.push_back(HitText(0));
                             std::cout << "EARLY" << std::endl;
                             nt.outOfBounds = true;
+                            cs.earlyHit += 1;
+                            cs.notesInARow += 1;
+                            cs.setCombo();
                         }
                         else if(nt.notePosition.y > -1.5f && nt.notePosition.y < -0.5f)//perfekt träf
                         {
                             hitObjects.push_back(HitText(1));
                             std::cout << "PERFEKT" << std::endl;
                             nt.outOfBounds = true;
+                            cs.perfectHit += 1;
+                            cs.notesInARow += 1;
+                            cs.setCombo();
                         }
                         else if(nt.notePosition.y > -2.0f && nt.notePosition.y < -1.5f) //sen träff
                         {
                             hitObjects.push_back(HitText(2));
                             std::cout << "LATE" << std::endl;
                             nt.outOfBounds = true;
+                            cs.lateHit += 1;
+                            cs.notesInARow += 1;
+                            cs.setCombo();
                         }
                     }
                 }
@@ -314,6 +336,12 @@ int main()
             //?Musik
             UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
             int laneToPlace = bm.ShouldPlaceNote(GetElapsed(songTimer));
+            std::cout << bm.lt.size() << "  " << cs.notesMissed + cs.earlyHit + cs.perfectHit + cs.lateHit << std::endl;
+            if((int)bm.lt.size() == cs.notesMissed + cs.earlyHit + cs.perfectHit + cs.lateHit)
+            {
+                activeScene = 2;
+
+            }
             if(laneToPlace != -1) //om tiden är inom en viss  marginal, sätt ut not
             {
                 //?how it's done:
@@ -321,6 +349,10 @@ int main()
                 noteObjects.push_back(Note(laneToPlace)); 
                 std::cout << "actually placed note lmao imagine that" << std::endl;
             }
+        }
+        else if(activeScene == 2)
+        {
+            DrawResults();
         }
         
         

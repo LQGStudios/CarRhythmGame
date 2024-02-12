@@ -33,15 +33,28 @@ struct Song
     Music music;
 
 };
+
 struct CurrentSong //Värdena i denna struct ska ändras medans man spelar 
 {
     private:
 
     public:
         double songPosition; //time
-        int notesHit;
+        int earlyHit;
+        int perfectHit;
+        int lateHit;
         int notesMissed;
         int notesInARow; //nollställ när en not har nått skärmens nedkant
+        int highestCombo = 0;
+
+
+        void setCombo()
+        {
+            if(notesInARow > highestCombo)
+            {
+                highestCombo = notesInARow;
+            }
+        }
         
     
 };
