@@ -6,7 +6,7 @@ struct Scenery
 {
     public: 
         int selectedModel;
-        Vector2 sceneryPosition =  (Vector2){5.0f, 27.0f};
+        Vector2 sceneryPosition = (Vector2){10.0f, 27.0f};
         bool outOfBounds = false;
 
         void moveScenery()

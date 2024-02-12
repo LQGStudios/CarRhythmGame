@@ -34,7 +34,7 @@ Model asphaltPlane;
 
 //moving pieces
 Texture2D noteTexture;
-Model sceneryModels[2];
+Model sceneryModels[2][2];
 Model playerModel;
 Sound moveSound;
 
@@ -50,8 +50,12 @@ void loadAssets()
     skyTexture = LoadTexture("assets/Fading_Sky-Sunset_02-1024x512.png");
 
     noteTexture = LoadTexture("assets/note.png");
-    sceneryModels[0] = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f)); 
-    sceneryModels[1] = LoadModel("assets/Lada.glb");
+    sceneryModels[0][0] = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f)); 
+    sceneryModels[0][1] = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 2.0f)); 
+
+    sceneryModels[1][0] = LoadModel("assets/ladaMain.glb");
+    sceneryModels[1][1] = LoadModel("assets/ladaWalls.glb");
+
     playerModel = LoadModel("assets/az1_01.glb");
     moveSound = LoadSound("assets/104026__rutgermuller__tires-squeaking.wav");
     SetSoundVolume(moveSound, 0.005f);
@@ -64,13 +68,16 @@ void loadAssets()
     grassPlane.materials[0].shader = worldShader;
     asphaltPlane.materials[0].shader = worldShader;
     scrollLoc = GetShaderLocation(worldShader, "uTime");
+    
+    noteShader = LoadShader("assets/notes.vs",0);
 
     objectShader = LoadShader("assets/objects.vs",0);
-    sceneryModels[0].materials[0].shader = objectShader;
-    sceneryModels[1].materials[0].shader = objectShader;
-    sceneryModels[1].materials[1].shader = objectShader;
+    sceneryModels[0][0].materials[0].shader = objectShader;
+    sceneryModels[0][1].materials[0].shader = objectShader;
+    
+    sceneryModels[1][0].materials[0].shader = objectShader;
+    sceneryModels[1][1].materials[0].shader = objectShader;
 
-    noteShader = LoadShader("assets/notes.vs",0);
 }
 
 void unloadAssets()
@@ -80,8 +87,12 @@ void unloadAssets()
     UnloadTexture(skyTexture);
 
     UnloadTexture(noteTexture);
-    UnloadModel(sceneryModels[0]);
-    UnloadModel(sceneryModels[1]);
+    
+    UnloadModel(sceneryModels[0][0]);
+    UnloadModel(sceneryModels[0][1]);
+    UnloadModel(sceneryModels[1][0]);
+    UnloadModel(sceneryModels[1][1]);
+
     UnloadModel(playerModel);
     UnloadSound(moveSound);
 
@@ -110,6 +121,12 @@ void drawWorld(Camera3D& cam, Player& plObj, std::vector<Scenery>& scObjs, std::
     //rita spelaren
     plObj.drawPlayer(playerModel);
 
+    //rita dekorationer
+        sceneryModels[scObjs[0].selectedModel][0].transform = MatrixTranslate(scObjs[0].sceneryPosition.x, -1.0f, scObjs[0].sceneryPosition.y);
+        sceneryModels[scObjs[0].selectedModel][1].transform = MatrixTranslate(scObjs[0].sceneryPosition.x, -1.0f, scObjs[0].sceneryPosition.y);
+        DrawModel(sceneryModels[scObjs[0].selectedModel][0], (Vector3){0.0f,0.0f,0.0f}, 1.0f, WHITE);
+        DrawModel(sceneryModels[scObjs[0].selectedModel][1], (Vector3){0.0f,0.0f,0.0f}, 1.0f, RED);
+
     BeginShaderMode(noteShader); //noter har inte en inbyggd shader och därför behövs shadermode
         for (int i = (int)ntObjs.size() - 1; i >= 0; i--)
         {
@@ -118,10 +135,6 @@ void drawWorld(Camera3D& cam, Player& plObj, std::vector<Scenery>& scObjs, std::
         }
     EndShaderMode();
     
-    //rita dekorationer
-    /*FIXA DET HÄR NÅGON GÅNG, VÄNTA PÅ ETT MIRAKEL*/
-        //sceneryModels[scObjs[0].selectedModel].transform = MatrixTranslate(scObjs[0].sceneryPosition.x * 20.0f, 0.0f, scObjs[0].sceneryPosition.y * 20.0f);
-        //DrawModel(sceneryModels[scObjs[0].selectedModel], (Vector3){0.0f,0.0f,0.0f}, 0.05f, BLUE);
     //Rita FPS och avsluta ritande
     EndMode3D();
     DrawFPS(10, 10);
@@ -239,7 +252,7 @@ int main()
     std::vector<Scenery> sceneryObjects = {};
     std::vector<Note> noteObjects = {};
     std::vector<HitText> hitObjects = {}; //lista över alla dekorationsobjekt
-    sceneryObjects.push_back(Scenery(0)); //lägg till ett nytt dekorationsobjekt i listan
+    sceneryObjects.push_back(Scenery(1)); //lägg till ett nytt dekorationsobjekt i listan
 
     loadAssets();
 
