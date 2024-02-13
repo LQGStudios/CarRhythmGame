@@ -31,6 +31,20 @@ double GetElapsed(Timer timer)
 struct Song 
 {   
     Music music;
+    Timer closeTimer;
+    const char* errText = "Kunde inte hitta den låten \n(kolla om beatmap och ljudfil har rätt namn och ligger i rätt mapp?)";
+    void SongError()
+    {
+        std::cerr << errText << std::endl;
+        DrawText(errText, GetScreenWidth()/2, GetScreenHeight()/2, 30, RED);
+
+        StartTimer(&closeTimer, 5.0f);
+
+        if (TimerDone(closeTimer))
+        {
+            CloseWindow();
+        }
+    }
 
 };
 
@@ -39,13 +53,15 @@ struct CurrentSong //Värdena i denna struct ska ändras medans man spelar
     private:
 
     public:
-        double songPosition; //time
-        int earlyHit;
-        int perfectHit;
-        int lateHit;
-        int notesMissed;
-        int notesInARow; //nollställ när en not har nått skärmens nedkant
+        double songPosition = 0.0; //time
+        int earlyHit = 0;
+        int perfectHit = 0;
+        int lateHit = 0;
+        int notesMissed = 0;
+        int notesInARow = 0; //nollställ när en not har nått skärmens nedkant
         int highestCombo = 0;
+        int currentScore = 0;
+        int finalGrade = 0;
 
 
         void setCombo()
@@ -72,11 +88,11 @@ struct CSVNote
 struct Beatmap
 {
     public:
-        int l;
-        double t;
+        int l = 0;
+        double t = 0.0;
         Timer timer1;
-        double currTime;
-        float beatPosition; //relativ till songPosition
+        double currTime = 0.0;
+        float beatPosition = 0.0f; //relativ till songPosition
         int currentNoteInSong = 0;
         
         std::vector<CSVNote> lt = {}; //lane, time, datan byts ut mot det som står i csv

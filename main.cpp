@@ -13,21 +13,27 @@
 #include "sound.hpp"
 
 //?musik
+Song song;
 Music music; //path till låten
 Beatmap bm;
 CurrentSong cs;
 Timer t;
 Timer songTimer;
+const char* titles[] = {"1: 140 kph\n", "2: Song 2\n", "3: Song 3\n", "4: Song 4\n", "5: Song 5\n"};
+int scores[] = {0, 0, 0};
 
 //misc variabler
+int selectedSong = 0;
 unsigned int cycles = 0;
 bool transition = false;
 int activeScene = 0;
 float scrollValue = 0;
-int scrollLoc;
+int scrollLoc = 0;
 Texture2D grassTexture;
 Texture2D roadTexture;
 Texture2D skyTexture;
+Texture2D grades;
+Texture2D frame;
 
 Model grassPlane;
 Model asphaltPlane;
@@ -48,6 +54,8 @@ void loadAssets()
     grassTexture = LoadTexture("assets/grass11.png");
     roadTexture = LoadTexture("assets/asphalt.png");
     skyTexture = LoadTexture("assets/Fading_Sky-Sunset_02-1024x512.png");
+    grades = LoadTexture("assets/grades.png");
+    frame = LoadTexture("assets/frame.png");
 
     noteTexture = LoadTexture("assets/note.png");
     sceneryModels[0][0] = LoadModel("assets/windmillMain.glb"); 
@@ -103,6 +111,18 @@ void unloadAssets()
     UnloadShader(noteShader);
 }
 
+void drawSlider(int x, int y, int w, int h, float percent, Color fill, Color bg)
+{
+    /*BG*/
+    DrawCircleSector({(float)(x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 180.0f, 360.0f, 180, bg);
+    DrawRectangle(x + h/2.0f, y, w, h, bg);
+    DrawCircleSector({(float)(w + x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 0, 180.0f, 180, bg);
+
+    /*Fill*/
+    DrawCircleSector({(float)(x + h/2.0f), (float)(y + h/2.0f)}, h/2, 0, -180.0f, 180, fill);
+    DrawRectangle(x + h/2.0f, y, ceil(w * percent), h, fill);
+    DrawCircleSector({(float)(w * percent + x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 0, 180.0f, 180, fill);
+}
 
 void drawWorld(Camera3D& cam, Player& plObj, Scenery& scObj, std::vector<Note>& ntObjs, std::vector<HitText>& htObjs)
 {
@@ -146,6 +166,8 @@ void drawWorld(Camera3D& cam, Player& plObj, Scenery& scObj, std::vector<Note>& 
     //Rita FPS och avsluta ritande
     EndMode3D();
     DrawFPS(10, 10);
+    drawSlider(10, 60, 144, 32, (float)(cs.earlyHit + cs.perfectHit + cs.lateHit + cs.notesMissed)/(float)bm.lt.size(), GREEN, GetColor(0x00000066));
+    DrawText(TextFormat("%d%%", (int)floor((float)(cs.earlyHit + cs.perfectHit + cs.lateHit + cs.notesMissed)/(float)bm.lt.size() * 100)), 10, 20, 32, RAYWHITE);
 
     for (int i = (int)htObjs.size() - 1; i >= 0; i--)
     {
@@ -190,17 +212,39 @@ void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle
     std::cout << "\n\n\nHej, beatmappen är laddad\n";
 
 }
+void DrawHighScores(int X, int Y, int title)
+{
+    DrawText("High Scores:\n",1.5*X, Y, 40, GOLD);
+    for (int i = 0; i < 3; i++)
+    {
+        std::string text = std::to_string(scores[i]) + " points";
+        DrawText(text.c_str(),1.5*X, Y + 40*(i+1), 40, LIGHTGRAY);
+    }
+    
+}
 
-void drawMenu()
+void drawMenu(int keyPress)
 {
     //setup
     BeginDrawing();
     ClearBackground(RAYWHITE);
+    DrawTexture(frame, 0, 0, WHITE);
 
+    int menuX = GetScreenWidth()/3;
+    int menuY = 350;
+    //text, x, y, fontsize, color
     DrawText("RYTHM\nRALLY", 500, 50 + 10 * sin(cycles * PI/180), 80, DARKGRAY);
-    DrawText("1: Song 1\n2: Song 2\n3: Song 3\n4: Song 4\n5: Song 5\n", 10, 400, 40, DARKGRAY);
+    for (int i = 0; i < 5; i++)
+    {
+        DrawText(titles[i], menuX, menuY + 40*i, 40, DARKGRAY);
+        if (i == keyPress)
+        {
+            DrawText(titles[i], menuX, menuY + 40*i, 40, GOLD);
 
-    
+        }
+    }
+
+    DrawHighScores(menuX, menuY, keyPress);
 
     if(transition == true)
     {
@@ -210,8 +254,32 @@ void drawMenu()
             activeScene = 1;
             transition = false;
             //?musik
-            //todo: switch för att välja låt
-            PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");
+            switch (selectedSong)
+            {
+            case 0:
+                PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");                
+                break;
+            case 1:
+                song.SongError();
+                
+                break;
+            case 2:
+                song.SongError();
+                
+                break;
+            case 3:
+                song.SongError();
+                
+                break;
+            case 4:
+                song.SongError();
+                
+                break;
+            default:
+                song.SongError();
+                
+            }
+            
         }
     }
 
@@ -226,12 +294,19 @@ void drawMenu()
 void DrawResults()
 {
     BeginDrawing();
-    ClearBackground(WHITE);
-    DrawText(TextFormat("Highest combo: %d notes", cs.highestCombo), 500, 200, 32, BLACK);
-    DrawText(TextFormat("Early: %d%%", (int)floor((float)cs.earlyHit/(float)bm.lt.size() * 100)), 500, 250, 32, BLACK);
-    DrawText(TextFormat("Perfect: %d%%", (int)floor((float)cs.perfectHit/(float)bm.lt.size() * 100)), 500, 290, 32, BLACK);
-    DrawText(TextFormat("Late: %d%%", (int)floor((float)cs.lateHit/(float)bm.lt.size() * 100)), 500, 330, 32, BLACK);
-    DrawText(TextFormat("Missed: %d%%", (int)floor((float)cs.notesMissed/(float)bm.lt.size() * 100)), 500, 370, 32, BLACK);
+    ClearBackground(RAYWHITE);
+    DrawTexture(frame, 0, 0, WHITE);
+    DrawText("Results:", 32, 100, 64, BLACK);
+
+    DrawText(TextFormat("Highest combo: %d notes", cs.highestCombo), 32, 210, 32, BLACK);
+    DrawText(TextFormat("Early: %d%%", (int)floor((float)cs.earlyHit/(float)bm.lt.size() * 100)), 32, 250, 32, BLACK);
+    DrawText(TextFormat("Perfect: %d%%", (int)floor((float)cs.perfectHit/(float)bm.lt.size() * 100)), 32, 290, 32, BLACK);
+    DrawText(TextFormat("Late: %d%%", (int)floor((float)cs.lateHit/(float)bm.lt.size() * 100)), 32, 330, 32, BLACK);
+    DrawText(TextFormat("Missed: %d%%", (int)floor((float)cs.notesMissed/(float)bm.lt.size() * 100)), 32, 370, 32, BLACK);
+    DrawText(TextFormat("Score: %d", cs.currentScore), 32, 480, 32, BLACK);
+
+    DrawTexturePro(grades,{0, cs.finalGrade * 256.0f, 256, 256},{500,104,512,512},{0,0},0.0f,WHITE);
+
     EndDrawing();
 }
 
@@ -243,6 +318,7 @@ int main()
     const int screenHeight = 720;
     
     //öppna ett nytt fönster
+    SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "Rythm Rally");
     InitAudioDevice();
     SetTargetFPS(60);
@@ -270,12 +346,49 @@ int main()
         
         if(activeScene == 0)
         {
+            switch (GetKeyPressed()) //för att man ska kunna välja låt
+            {
+            case 49: //betyder tangent 1, går att se med mus-hover
+                selectedSong = 0;
+                break;
+            case 50: 
+                selectedSong = 1;
+                break;
+            case 51: 
+                selectedSong = 2;
+                break;
+            case 52: 
+                selectedSong = 3;
+                break;
+            case 53: 
+                selectedSong = 4;
+                break;
+            case 265: //keycode up
+                selectedSong--;
+                if (selectedSong < 0)
+                {
+                    selectedSong = 4;
+                }
+                
+                break;
+            case 264: //keycode down
+                selectedSong++;
+                if (selectedSong > 4)
+                {
+                    selectedSong = 0;
+                }
+                break;
+                        
+            default:
+                drawMenu(selectedSong);
+                break;
+            }
+
             if(IsKeyPressed(KEY_ENTER) && transition == false)
             {
                 transition = true;
                 cycles = 0;
             }
-            drawMenu();
         }
         else if(activeScene == 1)
         {
@@ -302,7 +415,6 @@ int main()
                 }
                 else if(playerPressedHit == true)
                 {
-
                     /*
                     y>0 miss
                     0 > y > -0.5 tidig
@@ -355,8 +467,44 @@ int main()
             int laneToPlace = bm.ShouldPlaceNote(GetElapsed(songTimer));
             if((int)bm.lt.size() == cs.notesMissed + cs.earlyHit + cs.perfectHit + cs.lateHit)
             {
-                activeScene = 2;
+                /*
+                Early - 25
+                Perfect - 50
+                Late - 25
+                */
 
+                cs.currentScore += cs.earlyHit * 25;
+                cs.currentScore += cs.perfectHit * 50;
+                cs.currentScore += cs.lateHit * 25;
+
+                float maxScore = bm.lt.size() * 50.0f;
+
+                if(cs.currentScore/maxScore > 0.8f)
+                {
+                    cs.finalGrade = 5;
+                }
+                else if(cs.currentScore/maxScore > 0.67f)
+                {
+                    cs.finalGrade = 4;
+                }
+                else if(cs.currentScore/maxScore > 0.5f)
+                {
+                    cs.finalGrade = 3;
+                }
+                else if(cs.currentScore/maxScore > 0.33f)
+                {
+                    cs.finalGrade = 2;
+                }
+                else if(cs.currentScore/maxScore > 0.17f)
+                {
+                    cs.finalGrade = 1;
+                }
+                else
+                {
+                    cs.finalGrade = 0;
+                }
+
+                activeScene = 2;
             }
             if(laneToPlace != -1) //om tiden är inom en viss  marginal, sätt ut not
             {
