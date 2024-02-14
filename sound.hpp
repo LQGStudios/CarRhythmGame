@@ -62,7 +62,18 @@ struct CurrentSong //Värdena i denna struct ska ändras medans man spelar
         int highestCombo = 0;
         int currentScore = 0;
         int finalGrade = 0;
+        int failRate = 0;
 
+        bool scoreAndFailrate(int deltaScore, int deltaFail)
+        {
+            
+            currentScore += deltaScore;
+            failRate += deltaFail;
+            if(failRate > 10){return true;}
+            if(failRate < 0){failRate = 0;}
+
+            return false;
+        }
 
         void setCombo()
         {

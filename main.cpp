@@ -64,7 +64,7 @@ void loadAssets()
     sceneryModels[1][0] = LoadModel("assets/ladaMain.glb");
     sceneryModels[1][1] = LoadModel("assets/ladaWalls.glb");
 
-    playerModel = LoadModel("assets/testCar.glb");
+    playerModel = LoadModel("assets/carfinal.glb");
     moveSound = LoadSound("assets/104026__rutgermuller__tires-squeaking.wav");
     SetSoundVolume(moveSound, 0.005f);
 
@@ -201,6 +201,20 @@ void drawWorld(Camera3D& cam, Player& plObj, Scenery& scObj, std::vector<Note>& 
     EndDrawing();
 }
 
+bool insert(std::vector<int> &v, int n) 
+{
+    for(auto it = v.begin(); it != v.end(); ++it) 
+    {
+        if (*it < n ) 
+        {
+            v.insert( it, n );
+            v.pop_back();
+            return true;
+        }
+    }
+    return false;
+}
+
 //?musik
 void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
 {
@@ -217,8 +231,7 @@ void DrawHighScores(int X, int Y, int title)
     DrawText("High Scores:\n",1.5*X, Y, 40, GOLD);
     for (int i = 0; i < 3; i++)
     {
-        std::string text = std::to_string(scores[i]) + " points";
-        DrawText(text.c_str(),1.5*X, Y + 40*(i+1), 40, LIGHTGRAY);
+        DrawText(TextFormat("%d points", scores[i]),1.5*X, Y + 40*(i+1), 40, LIGHTGRAY);
     }
     
 }
@@ -412,6 +425,10 @@ int main()
                     std::cout << "Miss" << std::endl;
                     cs.notesInARow = 0;
                     cs.notesMissed += 1;
+                    if(cs.scoreAndFailrate(0, 2) == true)
+                    {
+                        activeScene = 2;
+                    }
                 }
                 else if(playerPressedHit == true)
                 {
@@ -433,6 +450,7 @@ int main()
                             cs.earlyHit += 1;
                             cs.notesInARow += 1;
                             cs.setCombo();
+                            cs.scoreAndFailrate(25, -1);
                         }
                         else if(nt.notePosition.y > -1.5f && nt.notePosition.y < -0.5f)//perfekt träf
                         {
@@ -442,6 +460,7 @@ int main()
                             cs.perfectHit += 1;
                             cs.notesInARow += 1;
                             cs.setCombo();
+                            cs.scoreAndFailrate(50, -1);
                         }
                         else if(nt.notePosition.y > -2.0f && nt.notePosition.y < -1.5f) //sen träff
                         {
@@ -451,6 +470,7 @@ int main()
                             cs.lateHit += 1;
                             cs.notesInARow += 1;
                             cs.setCombo();
+                            cs.scoreAndFailrate(25, -1);
                         }
                     }
                 }
@@ -467,15 +487,6 @@ int main()
             int laneToPlace = bm.ShouldPlaceNote(GetElapsed(songTimer));
             if((int)bm.lt.size() == cs.notesMissed + cs.earlyHit + cs.perfectHit + cs.lateHit)
             {
-                /*
-                Early - 25
-                Perfect - 50
-                Late - 25
-                */
-
-                cs.currentScore += cs.earlyHit * 25;
-                cs.currentScore += cs.perfectHit * 50;
-                cs.currentScore += cs.lateHit * 25;
 
                 float maxScore = bm.lt.size() * 50.0f;
 
