@@ -18,8 +18,11 @@ Beatmap bm;
 CurrentSong cs;
 Timer t;
 Timer songTimer;
+const char* titles[] = {"1: 140 kph\n", "2: Song 2\n", "3: Song 3\n", "4: Song 4\n", "5: Song 5\n"};
+int scores[] = {0, 0, 0};
 
 //misc variabler
+int selectedSong = 0;
 unsigned int cycles = 0;
 bool transition = false;
 int activeScene = 0;
@@ -182,17 +185,38 @@ void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle
     std::cout << "\n\n\nHej, beatmappen är laddad\n";
 
 }
+void DrawHighScores(int X, int Y, int title)
+{
+    DrawText("High Scores:\n",1.5*X, Y, 40, GOLD);
+    for (int i = 0; i < 3; i++)
+    {
+        std::string text = std::to_string(scores[i]) + " points";
+        DrawText(text.c_str(),1.5*X, Y + 40*(i+1), 40, LIGHTGRAY);
+    }
+    
+}
 
-void drawMenu()
+void drawMenu(int keyPress)
 {
     //setup
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
+    int menuX = GetScreenWidth()/3;
+    int menuY = 350;
+    //text, x, y, fontsize, color
     DrawText("RYTHM\nRALLY", 500, 50 + 10 * sin(cycles * PI/180), 80, DARKGRAY);
-    DrawText("1: Song 1\n2: Song 2\n3: Song 3\n4: Song 4\n5: Song 5\n", 10, 400, 40, DARKGRAY);
+    for (int i = 0; i < 5; i++)
+    {
+        DrawText(titles[i], menuX, menuY + 40*i, 40, DARKGRAY);
+        if (i == keyPress)
+        {
+            DrawText(titles[i], menuX, menuY + 40*i, 40, GOLD);
 
-    
+        }
+    }
+
+    DrawHighScores(menuX, menuY, keyPress);
 
     if(transition == true)
     {
@@ -202,8 +226,32 @@ void drawMenu()
             activeScene = 1;
             transition = false;
             //?musik
-            //todo: switch för att välja låt
-            PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");
+            switch (selectedSong)
+            {
+            case 0:
+                PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");                
+                break;
+            case 1:
+                song.SongError();
+                
+                break;
+            case 2:
+                song.SongError();
+                
+                break;
+            case 3:
+                song.SongError();
+                
+                break;
+            case 4:
+                song.SongError();
+                
+                break;
+            default:
+                song.SongError();
+                
+            }
+            
         }
     }
 
@@ -263,12 +311,49 @@ int main()
         
         if(activeScene == 0)
         {
+            switch (GetKeyPressed()) //för att man ska kunna välja låt
+            {
+            case 49: //betyder tangent 1, går att se med mus-hover
+                selectedSong = 0;
+                break;
+            case 50: 
+                selectedSong = 1;
+                break;
+            case 51: 
+                selectedSong = 2;
+                break;
+            case 52: 
+                selectedSong = 3;
+                break;
+            case 53: 
+                selectedSong = 4;
+                break;
+            case 265: //keycode up
+                selectedSong--;
+                if (selectedSong < 0)
+                {
+                    selectedSong = 4;
+                }
+                
+                break;
+            case 264: //keycode down
+                selectedSong++;
+                if (selectedSong > 4)
+                {
+                    selectedSong = 0;
+                }
+                break;
+                        
+            default:
+                drawMenu(selectedSong);
+                break;
+            }
+
             if(IsKeyPressed(KEY_ENTER) && transition == false)
             {
                 transition = true;
                 cycles = 0;
             }
-            drawMenu();
         }
         else if(activeScene == 1)
         {
@@ -298,7 +383,6 @@ int main()
                 }
                 else if(playerPressedHit == true)
                 {
-
                     /*
                     y>0 miss
                     0 > y > -0.5 tidig
