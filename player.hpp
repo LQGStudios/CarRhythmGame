@@ -53,11 +53,11 @@ struct Player
                     }
                 }
                 
-                angle = animationProgress * 20;
+                angle = 180 + (animationProgress * 20);
             }
 
             playerModel.transform = MatrixRotateXYZ((Vector3){0.0f, DEG2RAD * angle, 0.0f}); //rotera modellen
-            DrawModel(playerModel, (Vector3){playerXPosition, 0.0f, -1.0f}, 1.0f, WHITE);//rita modellen
+            DrawModel(playerModel, (Vector3){playerXPosition, 0.0f, -1.0f}, 1.0f, RED);//rita modellen
         }
 
         bool playerInput(Sound& sfx)
