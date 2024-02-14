@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "vector"
 #include "libs/raymath.h"
+#include "data.hpp" //för bla.a note place delay
 #include <list>
 #include <fstream> //för att läsa csv med beatmaps
 #include <iostream>
@@ -87,10 +88,11 @@ struct Beatmap
 {
     public:
         Timer timer1;
+        Settings s;
         int l;
         double t;
         double currTime;
-        double delay = 2.31674f;
+        double delay = s.delay;
         float beatPosition; //relativ till songPosition
         int currentNoteInSong = 0;
         
