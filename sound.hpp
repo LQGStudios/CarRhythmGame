@@ -53,14 +53,27 @@ struct CurrentSong //Värdena i denna struct ska ändras medans man spelar
     private:
 
     public:
-        double songPosition; //time
-        int earlyHit;
-        int perfectHit;
-        int lateHit;
-        int notesMissed;
-        int notesInARow; //nollställ när en not har nått skärmens nedkant
+        double songPosition = 0.0; //time
+        int earlyHit = 0;
+        int perfectHit = 0;
+        int lateHit = 0;
+        int notesMissed = 0;
+        int notesInARow = 0; //nollställ när en not har nått skärmens nedkant
         int highestCombo = 0;
+        int currentScore = 0;
+        int finalGrade = 0;
+        int failRate = 0;
 
+        bool scoreAndFailrate(int deltaScore, int deltaFail)
+        {
+            
+            currentScore += deltaScore;
+            failRate += deltaFail;
+            if(failRate > 10){return true;}
+            if(failRate < 0){failRate = 0;}
+
+            return false;
+        }
 
         void setCombo()
         {
@@ -86,11 +99,11 @@ struct CSVNote
 struct Beatmap
 {
     public:
-        int l;
-        double t;
+        int l = 0;
+        double t = 0.0;
         Timer timer1;
-        double currTime;
-        float beatPosition; //relativ till songPosition
+        double currTime = 0.0;
+        float beatPosition = 0.0f; //relativ till songPosition
         int currentNoteInSong = 0;
         
         std::vector<CSVNote> lt = {}; //lane, time, datan byts ut mot det som står i csv
