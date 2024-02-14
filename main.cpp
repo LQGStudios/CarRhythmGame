@@ -11,6 +11,7 @@
 #include "scenery.hpp"
 #include "note.hpp"
 #include "sound.hpp"
+#include "data.hpp"
 
 //?musik
 Music music; //path till låten
@@ -23,7 +24,9 @@ const char* titles[] = {"1: 140 kph\n", "2: Song 2\n", "3: Song 3\n", "4: Song 4
 int scores[] = {0, 0, 0};
 
 //misc variabler
+Settings s;
 int selectedSong = 0;
+int selectedSetting = 0;
 unsigned int cycles = 0;
 bool transition = false;
 int activeScene = 0;
@@ -392,8 +395,14 @@ int main()
 
             if(IsKeyPressed(KEY_ENTER) && transition == false)
             {
-                transition = true;
-                cycles = 0;
+                if (selectedSong != 5)
+                {
+                    transition = true;
+                    cycles = 0;   
+                }
+                //om settings valt och enter tryckt
+                activeScene = 3;
+                
             }
         }
         else if(activeScene == 1)
@@ -483,9 +492,74 @@ int main()
                 std::cout << "actually placed note lmao imagine that" << std::endl;
             }
         }
+        
         else if(activeScene == 2)
         {
             DrawResults();
+        }
+
+        else if(activeScene == 3)
+        {
+
+            switch (GetKeyPressed()) //för att man ska kunna välja inställning
+            {
+                case 49: //betyder tangent 1, går att se med mus-hover
+                    selectedSetting = 0; //delay
+                    if(GetKeyPressed() == IsKeyPressed(KEY_LEFT))
+                    {
+                        
+                    }
+
+                    else if(GetKeyPressed() == IsKeyPressed(KEY_RIGHT))
+                    {
+
+                    }
+                    break;
+                case 50: 
+                    selectedSetting = 1; //musikvolym
+                    break;
+                case 51: 
+                    selectedSetting = 2; //tire screech-volym
+                    break;
+                case 52: 
+                    selectedSetting = 3; //QEsound-volym
+                    break;
+                case 53: 
+                    selectedSetting = 4; //återställ
+                    break;
+                case 54: 
+                    selectedSetting = 5; //spara och gå tillbaka
+                    break;
+                case 265: //keycode up
+                    selectedSetting--;
+                    if (selectedSetting < 0)
+                    {
+                        selectedSetting = 5;
+                    }
+                    break;
+                case 264: //keycode down
+                    selectedSetting++;
+                    if (selectedSetting > 5)
+                    {
+                        selectedSetting = 0;
+                    }
+                    break;
+                default:
+                    DrawMenu(selectedSetting);
+                    break;
+            }
+
+            if(IsKeyPressed(KEY_ENTER) && transition == false)
+            {
+                if (selectedSetting == 5)
+                {
+                    //om tillbaka till startmeny är valt och enter tryckt
+                    s.SaveSettings();
+                    activeScene = 0;
+                }
+                
+            }
+            DrawSettings();
         }
         
         
