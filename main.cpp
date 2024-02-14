@@ -202,25 +202,53 @@ void DrawHighScores(int X, int Y, int title)
     DrawText("High Scores:\n",1.5*X, Y, 40, GOLD);
     for (int i = 0; i < 3; i++)
     {
-        std::string text = std::to_string(scores[i]) + " points";
-        DrawText(text.c_str(),1.5*X, Y + 40*(i+1), 40, LIGHTGRAY);
+        DrawText(TextFormat("%d points", scores[i]), 1.5*X, Y + 40*(i+1), 40, LIGHTGRAY);
     }
     
 }
 
-void DrawSettings()
+void DrawSettings(int keyPress)
 {
     BeginDrawing();
-    ClearBackground(DARKGRAY);
-    /*
+    ClearBackground(RAYWHITE);
     int sX = GetScreenWidth()/3;
-    int sY = 350;
-    std::string text = "Ljudfördröjning (i millisekunder)\n" + std::to_string(bm.delay);
+    int sY = 150;
+    DrawText(TextFormat("Audio delay:\n <- %d -> milliseconds", bm.delay), sX, sY, 30, BLACK);
+    DrawText(TextFormat("Music volume:\n <- %d ->", "placeholder"), sX, sY + 80, 30, BLACK);
+    DrawText(TextFormat("Car volume:\n <- %d ->", "placeholder"), sX, sY + 160, 30, BLACK);
+    DrawText(TextFormat("SFX volume:\n <- %d ->", "placeholder"), sX, sY + 240, 30, BLACK);
     
-    DrawText(text.c_str(), sX, sY + 40, 40, BLACK);
-    */
+    DrawText("Reset", sX, sY + 360, 30, BLACK);
+    DrawText("Save Settings", sX, sY + 400, 30, BLACK);
+    DrawText("Exit Without Saving", sX, sY + 440, 30, BLACK);
 
-
+    switch (keyPress)
+    {
+    case 0:
+        DrawText(TextFormat("Audio delay:\n <- %d -> milliseconds", bm.delay), sX, sY, 30, GOLD);
+        break;
+    case 1:
+        DrawText(TextFormat("Music volume:\n <- %d ->", "placeholder"), sX, sY + 80, 30, GOLD);
+        break;
+    case 2:
+        DrawText(TextFormat("Car volume:\n <- %d ->", "placeholder"), sX, sY + 160, 30, GOLD);
+        break;
+    case 3:
+        DrawText(TextFormat("SFX volume:\n <- %d ->", "placeholder"), sX, sY + 240, 30, GOLD);
+        break;
+    case 4:
+        DrawText("Reset", sX, sY + 360, 30, GOLD);
+        break;
+    case 5:
+        DrawText("Save Settings", sX, sY + 400, 30, GOLD);
+        break;
+    case 6:
+        DrawText("Exit Without Saving", sX, sY + 440, 30, GOLD);
+        break;
+    default:
+        std::cout << "error in drawsettings" << std::endl;
+        break;
+    }
     
     DrawFPS(10, 10);
     EndDrawing();
@@ -240,10 +268,10 @@ void DrawMenu(int keyPress)
     {
         if (i >=5) //om inställningar är valt
         {
-            DrawText("Inställningar", menuX, menuY + 40*i, 40, DARKGRAY);
+            DrawText("Settings", menuX, menuY + 40*i, 40, DARKGRAY);
             if (i == keyPress)
             {
-                DrawText("Inställningar", menuX, menuY + 40*i, 40, GOLD);
+                DrawText("Settings", menuX, menuY + 40*i, 40, GOLD);
             }
         }
         else
@@ -288,7 +316,7 @@ void DrawMenu(int keyPress)
                 song.SongError();
                 break;
             case 5:
-                DrawSettings();
+                DrawSettings(selectedSetting);
                 break;
 
             default:
@@ -401,7 +429,7 @@ int main()
                     cycles = 0;   
                 }
                 //om settings valt och enter tryckt
-                activeScene = 3;
+                activeScene = 4;
                 
             }
         }
@@ -498,7 +526,7 @@ int main()
             DrawResults();
         }
 
-        else if(activeScene == 3)
+        else if(activeScene == 4)
         {
 
             switch (GetKeyPressed()) //för att man ska kunna välja inställning
@@ -545,7 +573,7 @@ int main()
                     }
                     break;
                 default:
-                    DrawMenu(selectedSetting);
+                    DrawSettings(selectedSetting);
                     break;
             }
 
@@ -559,7 +587,7 @@ int main()
                 }
                 
             }
-            DrawSettings();
+            DrawSettings(selectedSetting);
         }
         
         

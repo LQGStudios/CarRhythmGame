@@ -6,13 +6,18 @@
 #include <iostream>
 #include <string>
 
+
 struct Settings
 {
-    double delay; // sätt detta till talet på rad x i sparfilen
-    void SetDelay(double time)
+    double delay;  
+    void SetDelay(double delay, double time)
     {
         delay += time; //
         //s
+    }
+    LoadSettings()
+    {
+        // sätt saker och ting till saken på rad x i sparfilen
     }
     SaveSettings()
     {
