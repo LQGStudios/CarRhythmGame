@@ -11,6 +11,7 @@
 #include "scenery.hpp"
 #include "note.hpp"
 #include "sound.hpp"
+#include "data.hpp" 
 
 //?musik
 Song song;
@@ -19,11 +20,13 @@ Beatmap bm;
 CurrentSong cs;
 Timer t;
 Timer songTimer;
+Song song;
 const char* titles[] = {"1: 140 kph\n", "2: Song 2\n", "3: Song 3\n", "4: Song 4\n", "5: Song 5\n"};
 int scores[] = {0, 0, 0};
 
 //misc variabler
-int selectedSong = 0;
+Settings s;
+Menu m;
 unsigned int cycles = 0;
 bool transition = false;
 int activeScene = 0;
@@ -230,12 +233,59 @@ void DrawHighScores(int X, int Y, int title)
     DrawText("High Scores:\n",1.5*X, Y, 40, GOLD);
     for (int i = 0; i < 3; i++)
     {
-        DrawText(TextFormat("%d points", scores[i]),1.5*X, Y + 40*(i+1), 40, LIGHTGRAY);
+        DrawText(TextFormat("%d points", scores[i]), 1.5*X, Y + 40*(i+1), 40, LIGHTGRAY);
     }
     
 }
 
-void drawMenu(int keyPress)
+void DrawSettings(int keyPress)
+{
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    int sX = GetScreenWidth()/3;
+    int sY = 150;
+    DrawText(TextFormat("Audio delay:\n <- %d -> milliseconds", s.delay), sX, sY, 30, BLACK);
+    DrawText(TextFormat("Music volume:\n <- %d ->", "placeholder"), sX, sY + 80, 30, BLACK);
+    DrawText(TextFormat("Car volume:\n <- %d ->", "placeholder"), sX, sY + 160, 30, BLACK);
+    DrawText(TextFormat("SFX volume:\n <- %d ->", "placeholder"), sX, sY + 240, 30, BLACK);
+    
+    DrawText("Reset", sX, sY + 360, 30, BLACK);
+    DrawText("Save Settings", sX, sY + 400, 30, BLACK);
+    DrawText("Exit Without Saving", sX, sY + 440, 30, BLACK);
+
+    switch (keyPress)
+    {
+    case 0:
+        DrawText(TextFormat("Audio delay:\n <- %d -> milliseconds", s.delay), sX, sY, 30, GOLD);
+        break;
+    case 1:
+        DrawText(TextFormat("Music volume:\n <- %d ->", "placeholder"), sX, sY + 80, 30, GOLD);
+        break;
+    case 2:
+        DrawText(TextFormat("Car volume:\n <- %d ->", "placeholder"), sX, sY + 160, 30, GOLD);
+        break;
+    case 3:
+        DrawText(TextFormat("SFX volume:\n <- %d ->", "placeholder"), sX, sY + 240, 30, GOLD);
+        break;
+    case 4:
+        DrawText("Reset", sX, sY + 360, 30, GOLD);
+        break;
+    case 5:
+        DrawText("Save Settings", sX, sY + 400, 30, GOLD);
+        break;
+    case 6:
+        DrawText("Exit Without Saving", sX, sY + 440, 30, GOLD);
+        break;
+    default:
+        std::cout << "error in drawsettings" << std::endl;
+        break;
+    }
+    
+    DrawFPS(10, 10);
+    EndDrawing();
+}
+
+void DrawMenu(int keyPress)
 {
     //setup
     BeginDrawing();
@@ -246,12 +296,23 @@ void drawMenu(int keyPress)
     int menuY = 350;
     //text, x, y, fontsize, color
     DrawText("RYTHM\nRALLY", 500, 50 + 10 * sin(cycles * PI/180), 80, DARKGRAY);
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 6; i++)
     {
-        DrawText(titles[i], menuX, menuY + 40*i, 40, DARKGRAY);
-        if (i == keyPress)
+        if (i >=5) //om inställningar är valt
         {
-            DrawText(titles[i], menuX, menuY + 40*i, 40, GOLD);
+            DrawText("Settings", menuX, menuY + 40*i, 40, DARKGRAY);
+            if (i == keyPress)
+            {
+                DrawText("Settings", menuX, menuY + 40*i, 40, GOLD);
+            }
+        }
+        else
+        {
+            DrawText(titles[i], menuX, menuY + 40*i, 40, DARKGRAY);
+            if (i == keyPress)
+            {
+                DrawText(titles[i], menuX, menuY + 40*i, 40, GOLD);
+            }
 
         }
     }
@@ -261,12 +322,13 @@ void drawMenu(int keyPress)
     if(transition == true)
     {
         DrawCircle(640, 360, cycles * 15, BLACK);
-        if(15 * cycles >= 800)
+        if(15 * cycles >= 800 && activeScene == 0)
         {
+            
             activeScene = 1;
             transition = false;
             //?musik
-            switch (selectedSong)
+            switch (m.selected)
             {
             case 0:
                 PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");                
@@ -285,8 +347,11 @@ void drawMenu(int keyPress)
                 break;
             case 4:
                 song.SongError();
-                
                 break;
+            case 5:
+                DrawSettings(m.selected);
+                break;
+
             default:
                 song.SongError();
                 
@@ -301,7 +366,6 @@ void drawMenu(int keyPress)
 
     EndDrawing();
 }
-
 
 void DrawResults()
 {
@@ -356,50 +420,115 @@ int main()
     {
         cycles += 1;
         
-        if(activeScene == 0)
+        if(activeScene == 0 || activeScene == 4)
         {
-            switch (GetKeyPressed()) //för att man ska kunna välja låt
+
+            switch (GetKeyPressed()) //för att man ska kunna välja i menyn
             {
             case 49: //betyder tangent 1, går att se med mus-hover
-                selectedSong = 0;
+                m.selected = 0; //låtnr eller delay
                 break;
             case 50: 
-                selectedSong = 1;
+                m.selected = 1; //låtnr eller musikvolym
                 break;
             case 51: 
-                selectedSong = 2;
+                m.selected = 2; //låtnr eller tire screech-volym
                 break;
             case 52: 
-                selectedSong = 3;
+                m.selected = 3; //låtnr eller QEsound-volym
                 break;
             case 53: 
-                selectedSong = 4;
+                m.selected = 4; //låtnr eller återställ
+                break;
+            case 54: 
+                m.selected = 5; //låtnr eller spara och gå tillbaka
+                break;
+            case 55: 
+                m.selected = 6; //låtnr eller spara inte men gå tillbaka
+                break;
+            case 263: //key left
+                s.SetDelay(-0.001f);
+                break;
+            case 262: //key right
+                s.SetDelay(0.001f);
                 break;
             case 265: //keycode up
-                selectedSong--;
-                if (selectedSong < 0)
+                m.selected--;
+                if (m.selected < 0 && activeScene == 0)
                 {
-                    selectedSong = 4;
+                    m.selected = 5;
                 }
-                
+                else if(m.selected < 0 && activeScene == 4)
+                {
+                    m.selected = 6;
+                }
                 break;
             case 264: //keycode down
-                selectedSong++;
-                if (selectedSong > 4)
+                m.selected++;
+                if (m.selected > 6 && activeScene == 4)
                 {
-                    selectedSong = 0;
+                    m.selected = 0;
+                    break;
+                }
+                else if(m.selected > 5 && activeScene == 0)
+                {
+                    m.selected = 0;
                 }
                 break;
-                        
             default:
-                drawMenu(selectedSong);
+                if(activeScene == 4)
+                {
+                    DrawSettings(m.selected);
+                    break;
+                }
+                DrawMenu(m.selected);
                 break;
             }
 
-            if(IsKeyPressed(KEY_ENTER) && transition == false)
+            if(IsKeyPressed(KEY_ENTER))
             {
-                transition = true;
-                cycles = 0;
+                std::cout << activeScene << std::endl;
+                if (transition == false)
+                {
+                    transition = true;
+                    cycles = 0;
+                }                
+                
+                if(activeScene == 0)
+                {    
+                    if (m.selected == 5)
+                    {
+                        activeScene = 4; //om settings valt och enter tryckt
+                    }
+                }
+                else if(activeScene == 4)
+                {
+                    switch (m.selected)
+                    {
+                    case 4: //reset and exit
+                        activeScene = 0;
+                        cycles = 0;
+                        s.Resettings();
+                        
+                        break;
+                    case 5: //exit save
+                        activeScene = 0;
+                        cycles = 0;
+                        s.SaveSettings(s.delay);                    
+
+                        break;
+                    case 6:
+                        activeScene = 0; //yes exit no save
+                        cycles = 0;
+                        break;         
+                    default:
+                        activeScene = 4;
+                        break;
+                    }                
+                    //std::cout << m.selected << std::endl;
+                }
+
+                
             }
         }
         else if(activeScene == 1)
@@ -482,8 +611,8 @@ int main()
 
             //?Musik
             UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
-            int laneToPlace = bm.ShouldPlaceNote(GetElapsed(songTimer));
-            std::cout << bm.lt.size() << "  " << cs.notesMissed + cs.earlyHit + cs.perfectHit + cs.lateHit << std::endl;
+            int laneToPlace = bm.ShouldPlaceNote(GetElapsed(songTimer)); //berättar vilken fil på vägen som en not ska placeras i
+
             if((int)bm.lt.size() == cs.notesMissed + cs.earlyHit + cs.perfectHit + cs.lateHit)
             {
 
@@ -519,15 +648,16 @@ int main()
             if(laneToPlace != -1) //om tiden är inom en viss  marginal, sätt ut not
             {
                 //?how it's done:
-                
                 noteObjects.push_back(Note(laneToPlace)); 
                 std::cout << "actually placed note lmao imagine that" << std::endl;
             }
         }
+        
         else if(activeScene == 2)
         {
             DrawResults();
         }
+
         
         
 

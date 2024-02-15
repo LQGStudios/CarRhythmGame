@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "vector"
 #include "libs/raymath.h"
+#include "data.hpp" //för bla.a note place delay
 #include <list>
 #include <fstream> //för att läsa csv med beatmaps
 #include <iostream>
@@ -99,11 +100,14 @@ struct CSVNote
 struct Beatmap
 {
     public:
-        int l = 0;
-        double t = 0.0;
         Timer timer1;
-        double currTime = 0.0;
-        float beatPosition = 0.0f; //relativ till songPosition
+        Settings s;
+        int l;
+        double t;
+        double currTime;
+        double delay = s.delay;
+        float beatPosition; //relativ till songPosition
+
         int currentNoteInSong = 0;
         
         std::vector<CSVNote> lt = {}; //lane, time, datan byts ut mot det som står i csv
@@ -153,7 +157,7 @@ struct Beatmap
             //todo: laborera med margin. Den ska vara ca 1/60 av en sekund iom 60 fps target
             float margin = 0.0167f;
 
-            if(lt[currentNoteInSong].time - margin < (elapsed + 2.31674) && (elapsed + 2.31674) < lt[currentNoteInSong].time + margin)
+            if(lt[currentNoteInSong].time - margin < (elapsed + delay) && (elapsed + delay) < lt[currentNoteInSong].time + margin)
             {
                 return lt[currentNoteInSong++].lane; //säger till vilken lane
             }
