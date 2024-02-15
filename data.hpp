@@ -19,29 +19,33 @@ struct HighScore
         
     }
 };
-
+struct Menu
+{
+    int selected;
+};
 struct Settings
 {
-    double delay = 2.31674f; //använd i sound.hpp
+    float delay = 2.31674f; //använd i sound.hpp
     std::vector<HighScore> hi = {}; //alla high scores i en vector
-    void SetDelay(double timeDiff)
+    void SetDelay(float timeDiff)
     {
         delay += timeDiff; //slår alla andra lösningar, no diff
     }
-    Loadings()
+    void Loadings()
     {
         // sätt saker och ting till saken på rad x i sparfilen
     }
-    Savings(double d) //om bråttom, ta bort
+    void SaveSettings(double d) //om bråttom, ta bort
     {
+        delay = d;
         //skriv värdet av delay osv. till fil
     }
-    Resettings()
+    void Resettings()
     {
         delay = 2.31674f;
-        Savings(delay);
+        SaveSettings(delay);
     }
-    Rescore()
+    void ResetScore()
     {
 
     }

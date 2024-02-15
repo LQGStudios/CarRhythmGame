@@ -25,8 +25,7 @@ int scores[] = {0, 0, 0};
 
 //misc variabler
 Settings s;
-int selectedSong = 0;
-int selectedSetting = 0;
+Menu m;
 unsigned int cycles = 0;
 bool transition = false;
 int activeScene = 0;
@@ -290,12 +289,13 @@ void DrawMenu(int keyPress)
     if(transition == true)
     {
         DrawCircle(640, 360, cycles * 15, BLACK);
-        if(15 * cycles >= 800)
+        if(15 * cycles >= 800 && activeScene == 0)
         {
+            
             activeScene = 1;
             transition = false;
             //?musik
-            switch (selectedSong)
+            switch (m.selected)
             {
             case 0:
                 PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");                
@@ -316,7 +316,7 @@ void DrawMenu(int keyPress)
                 song.SongError();
                 break;
             case 5:
-                DrawSettings(selectedSetting);
+                DrawSettings(m.selected);
                 break;
 
             default:
@@ -379,56 +379,113 @@ int main()
     {
         cycles += 1;
         
-        if(activeScene == 0)
+        if(activeScene == 0 || activeScene == 4)
         {
-            switch (GetKeyPressed()) //för att man ska kunna välja låt
+
+            switch (GetKeyPressed()) //för att man ska kunna välja i menyn
             {
             case 49: //betyder tangent 1, går att se med mus-hover
-                selectedSong = 0;
+                m.selected = 0; //låtnr eller delay
                 break;
             case 50: 
-                selectedSong = 1;
+                m.selected = 1; //låtnr eller musikvolym
                 break;
             case 51: 
-                selectedSong = 2;
+                m.selected = 2; //låtnr eller tire screech-volym
                 break;
             case 52: 
-                selectedSong = 3;
+                m.selected = 3; //låtnr eller QEsound-volym
                 break;
             case 53: 
-                selectedSong = 4;
+                m.selected = 4; //låtnr eller återställ
                 break;
             case 54: 
-                selectedSong = 5;
+                m.selected = 5; //låtnr eller spara och gå tillbaka
+                break;
+            case 55: 
+                m.selected = 6; //låtnr eller spara inte men gå tillbaka
+                break;
+            case 263: //key left
+                s.SetDelay(-0.001f);
+                break;
+            case 262: //key right
+                s.SetDelay(0.001f);
                 break;
             case 265: //keycode up
-                selectedSong--;
-                if (selectedSong < 0)
+                m.selected--;
+                if (m.selected < 0 && activeScene == 0)
                 {
-                    selectedSong = 5;
+                    m.selected = 5;
+                }
+                else if(m.selected < 0 && activeScene == 4)
+                {
+                    m.selected = 6;
                 }
                 break;
             case 264: //keycode down
-                selectedSong++;
-                if (selectedSong > 5)
+                m.selected++;
+                if (m.selected > 6 && activeScene == 4)
                 {
-                    selectedSong = 0;
+                    m.selected = 0;
+                    break;
+                }
+                else if(m.selected > 5 && activeScene == 0)
+                {
+                    m.selected = 0;
                 }
                 break;
-                        
             default:
-                DrawMenu(selectedSong);
+                if(activeScene == 4)
+                {
+                    DrawSettings(m.selected);
+                    break;
+                }
+                DrawMenu(m.selected);
                 break;
             }
 
-            if(IsKeyPressed(KEY_ENTER) && transition == false)
+            if(IsKeyPressed(KEY_ENTER))
             {
-                if (selectedSong == 5)
+                std::cout << activeScene << std::endl;
+                if (transition == false)
                 {
-                    activeScene = 4; //om settings valt och enter tryckt
+                    transition = true;
+                    cycles = 0;
+                }                
+                
+                if(activeScene == 0)
+                {    
+                    if (m.selected == 5)
+                    {
+                        activeScene = 4; //om settings valt och enter tryckt
+                    }
                 }
-                transition = true;
-                cycles = 0;   
+                else if(activeScene == 4)
+                {
+                    switch (m.selected)
+                    {
+                    case 4: //reset and exit
+                        activeScene = 0;
+                        cycles = 0;
+                        s.Resettings();
+                        
+                        break;
+                    case 5: //exit save
+                        activeScene = 0;
+                        cycles = 0;
+                        s.SaveSettings(s.delay);                    
+
+                        break;
+                    case 6:
+                        activeScene = 0; //yes exit no save
+                        cycles = 0;
+                        break;         
+                    default:
+                        activeScene = 4;
+                        break;
+                    }                
+                    //std::cout << m.selected << std::endl;
+                }
 
                 
             }
@@ -507,7 +564,7 @@ int main()
 
             //?Musik
             UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
-            int laneToPlace = bm.ShouldPlaceNote(GetElapsed(songTimer));
+            int laneToPlace = bm.ShouldPlaceNote(GetElapsed(songTimer)); //berättar vilken fil på vägen som en not ska placeras i
             if((int)bm.lt.size() == cs.notesMissed + cs.earlyHit + cs.perfectHit + cs.lateHit)
             {
                 activeScene = 2;
@@ -526,80 +583,6 @@ int main()
             DrawResults();
         }
 
-        else if(activeScene == 4)
-        {
-
-            switch (GetKeyPressed()) //för att man ska kunna välja inställning, //!någonting här orsakar lagg...
-            {
-                case 49: //betyder tangent 1, går att se med mus-hover
-                    selectedSetting = 0; //delay
-                    break;
-                case 50: 
-                    selectedSetting = 1; //musikvolym
-                    break;
-                case 51: 
-                    selectedSetting = 2; //tire screech-volym
-                    break;
-                case 52: 
-                    selectedSetting = 3; //QEsound-volym
-                    break;
-                case 53: 
-                    selectedSetting = 4; //återställ
-                    break;
-                case 54: 
-                    selectedSetting = 5; //spara och gå tillbaka
-                    break;
-                case 55: 
-                    selectedSetting = 6; //spara inte men tillbaka
-                    break;
-                case 263: //key left
-                    s.SetDelay(-0.001);
-                    break;
-                case 262: //key right
-                    s.SetDelay(0.001);
-                    break;
-                case 265: //keycode up
-                    selectedSetting--;
-                    if (selectedSetting < 0)
-                    {
-                        selectedSetting = 6;
-                    }
-                    break;
-                case 264: //keycode down
-                    selectedSetting++;
-                    if (selectedSetting > 6)
-                    {
-                        selectedSetting = 0;
-                    }
-                    break;
-                default:
-                    DrawSettings(selectedSetting);
-                    break;
-            }
-            std::cout << selectedSetting << std::endl;
-            if(IsKeyPressed(KEY_ENTER))
-            {
-                switch (selectedSetting)
-                {
-                case 4:
-                    activeScene = 0;
-                    s.Resettings();                    
-                    break;
-                case 5:
-                    activeScene = 0;
-                    s.Resettings();                    
-                    break;
-                case 6:
-                    activeScene = 0;
-                    break;         
-                default:
-                    std::cout << "selected" << selectedSetting << std::endl;
-                    activeScene = 4;
-                    break;
-                }                
-            }
-            DrawSettings(selectedSetting);
-        }
         
         
 
