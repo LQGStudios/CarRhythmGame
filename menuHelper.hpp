@@ -1,5 +1,4 @@
 #include "raylib.h"
-#include "libs/raymath.h"
 #include <iostream>
 
 struct menuHelper
@@ -55,19 +54,6 @@ struct menuHelper
         
         DrawCircleSector({x + circleRadius, y + (h - circleRadius)}, circleRadius, 270, 360, 180, c);
         DrawCircleSector({x + (w - circleRadius), y + (h - circleRadius)}, circleRadius, 0, 90, 180, c);
-    }
-
-    void drawSlider(int x, int y, int w, int h, float percent, Color fill, Color bg)
-    {
-        /*BG*/
-        DrawCircleSector({(float)(x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 180.0f, 360.0f, 180, bg);
-        DrawRectangle(x + h/2.0f, y, w, h, bg);
-        DrawCircleSector({(float)(w + x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 0, 180.0f, 180, bg);
-
-        /*Fill*/
-        DrawCircleSector({(float)(x + h/2.0f), (float)(y + h/2.0f)}, h/2, 0, -180.0f, 180, fill);
-        DrawRectangle(x + h/2.0f, y, ceil(w * percent), h, fill);
-        DrawCircleSector({(float)(w * percent + x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 0, 180.0f, 180, fill);
     }
 };
 
