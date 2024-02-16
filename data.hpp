@@ -14,9 +14,12 @@ struct HighScore
     int second = 0;
     int third = 0;
 
-    HighScore(int first, int second, int third)
+
+    HighScore(int one, int two, int three)
     {
-        
+        first = one;
+        second = two;
+        third = three;
     }
 };
 struct Menu
@@ -30,6 +33,7 @@ struct Settings
     float musicVolume = 1.0f;
     float carVolume = 1.0f;
     float sfxVolume = 1.0f;
+
 
     std::vector<HighScore> hi = {}; //alla high scores i en vector
     void SetDelay(float timeDiff)
