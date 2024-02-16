@@ -52,6 +52,7 @@ Texture2D noteTexture;
 Model sceneryModels[2][2];
 Model playerModel;
 Sound moveSound;
+Sound QEsound;
 
 //shaders
 Shader worldShader;
@@ -80,8 +81,11 @@ void loadAssets()
     sceneryModels[1][1] = LoadModel("assets/ladaWalls.glb");
 
     playerModel = LoadModel("assets/carfinal.glb");
+    
     moveSound = LoadSound("assets/104026__rutgermuller__tires-squeaking.wav");
-    SetSoundVolume(moveSound, 0.005f);
+    QEsound = LoadSound("assets/QEsound.wav");
+    SetSoundVolume(moveSound, bm.s.carVolume);
+    SetSoundVolume(QEsound, bm.s.sfxVolume);
 
     grassPlane = LoadModelFromMesh(GenMeshPlane(60.0f, 50.0f, 50, 50));
     SetMaterialTexture(&grassPlane.materials[0], MATERIAL_MAP_DIFFUSE, grassTexture);
@@ -269,28 +273,35 @@ void DrawSettings(int keyPress)
     ClearBackground(RAYWHITE);
     int sX = GetScreenWidth()/3;
     int sY = 150;
-    DrawText(TextFormat("Audio delay:\n <- %f -> milliseconds", bm.s.delay * 1000), sX, sY, 30, BLACK);
-    DrawText(TextFormat("Music volume:\n <- %f ->", bm.s.musicVolume * 100), sX, sY + 80, 30, BLACK);
-    DrawText(TextFormat("Car volume:\n <- %f ->", bm.s.carVolume * 100), sX, sY + 160, 30, BLACK);
-    DrawText(TextFormat("SFX volume:\n <- %f ->", bm.s.sfxVolume * 100), sX, sY + 240, 30, BLACK);
+    
+    int dispDelay = static_cast<int>(bm.s.delay*1000);
+    int dispMusic = static_cast<int>(bm.s.musicVolume*100);
+    int dispCar = static_cast<int>(bm.s.carVolume*10000);
+    int dispSfx = static_cast<int>(bm.s.sfxVolume*100);
+    std::cout<<"Hello World "<<dispSfx<<dispCar<<dispMusic<<dispDelay<<std::endl;
+
+
+    DrawText(TextFormat("Audio delay:\n <- %i -> milliseconds", dispDelay), sX, sY, 30, BLACK);
+    DrawText(TextFormat("Music volume:\n <- %i ->", dispMusic), sX, sY + 80, 30, BLACK);
+    DrawText(TextFormat("Car volume:\n <- %i ->", dispCar), sX, sY + 160, 30, BLACK);
+    DrawText(TextFormat("SFX volume:\n <- %i ->", dispSfx), sX, sY + 240, 30, BLACK);
     
     DrawText("Reset", sX, sY + 360, 30, BLACK);
     DrawText("Save Settings", sX, sY + 400, 30, BLACK);
     DrawText("Exit Without Saving", sX, sY + 440, 30, BLACK);
-
     switch (keyPress)
     {
     case 0:
-        DrawText(TextFormat("Audio delay:\n <- %f -> milliseconds", bm.s.delay * 1000), sX, sY, 30, GOLD);
+        DrawText(TextFormat("Audio delay:\n <- %i -> milliseconds", dispDelay), sX, sY, 30, GOLD);
         break;
     case 1:
-        DrawText(TextFormat("Music volume:\n <- %f ->", bm.s.musicVolume * 100), sX, sY + 80, 30, GOLD);
+        DrawText(TextFormat("Music volume:\n <- %i ->", dispMusic), sX, sY + 80, 30, GOLD);
         break;
     case 2:
-        DrawText(TextFormat("Car volume:\n <- %f ->", bm.s.carVolume * 100), sX, sY + 160, 30, GOLD);
+        DrawText(TextFormat("Car volume:\n <- %i ->", dispCar), sX, sY + 160, 30, GOLD);
         break;
     case 3:
-        DrawText(TextFormat("SFX volume:\n <- %f ->", bm.s.sfxVolume * 100), sX, sY + 240, 30, GOLD);
+        DrawText(TextFormat("SFX volume:\n <- %i ->", dispSfx), sX, sY + 240, 30, GOLD);
         break;
     case 4:
         DrawText("Reset", sX, sY + 360, 30, GOLD);
@@ -550,21 +561,28 @@ int main()
                         activeScene = 0;
                         cycles = 0;
                         bm.s.Resettings();
-                        
+                        std::cout << "Delay: " << bm.s.delay << " musik: " << bm.s.musicVolume << " bil: "<< bm.s.carVolume << " sfx: "<< bm.s.sfxVolume << std::endl;
+
                         break;
                     case 5: //exit save
                         m.selected = 5;
                         activeScene = 0;
                         cycles = 0;
-                        bm.s.SaveSettings();                    
+                        bm.s.SaveSettings();
+                        //de uppdateras nu utan att behöva stänga spelet
+                        SetSoundVolume(moveSound, bm.s.carVolume); 
+                        SetSoundVolume(QEsound, bm.s.sfxVolume);
+                        std::cout << "Delay: " << bm.s.delay << " musik: " << bm.s.musicVolume << " bil: "<< bm.s.carVolume << " sfx: "<< bm.s.sfxVolume << std::endl;
 
                         break;
-                    case 6:
+                    case 6: //yes exit no save
                         m.selected = 5;
-                        activeScene = 0; //yes exit no save
+                        activeScene = 0; 
                         cycles = 0;
+                        std::cout << "Delay: " << bm.s.delay << " musik: " << bm.s.musicVolume << " bil: "<< bm.s.carVolume << " sfx: "<< bm.s.sfxVolume << std::endl;
+
                         break;         
-                    default:
+                    default: //går till save-knappen
                         m.selected = 5;
                         activeScene = 4;
                         break;
@@ -578,7 +596,7 @@ int main()
         else if(activeScene == 1)
         {
             //har spelaren tryckt på en knapp? Flytta och animera om spelaren gjorde det
-            bool playerPressedHit = playerObject.playerInput(moveSound); 
+            bool playerPressedHit = playerObject.playerInput(moveSound, QEsound); 
             
             //flytta varje dekoration och kontrollera om den fortfarande behövs
             sceneryObject.moveScenery();

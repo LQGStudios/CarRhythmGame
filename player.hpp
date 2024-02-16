@@ -9,7 +9,6 @@ struct Player
         int animationDirection = 1;
         bool animatorActive = false;
         int animationCycles = 0;
-        Sound QEsound = LoadSound("assets/QEsound.wav");
 
         
     public: 
@@ -62,7 +61,7 @@ struct Player
             DrawModel(playerModel, (Vector3){playerXPosition, 0.0f, -1.0f}, 1.0f, WHITE);//rita modellen
         }
 
-        bool playerInput(Sound& sfx)
+        bool playerInput(Sound& sfx, Sound& sfx2)
         {
             //om en piltangent är nedtryckt, flytta spelaren och starta animationen
             if((IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)) && playerXPosition > -3.0f)
@@ -86,7 +85,7 @@ struct Player
 
             if(IsKeyPressed(KEY_E) || IsKeyPressed(KEY_Q))
             {
-                PlaySound(QEsound);
+                PlaySound(sfx2);
                 return true;
             }
 

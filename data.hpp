@@ -9,20 +9,6 @@
 //?include guard, så att inte sound.hpp och data slåss om vem som var först att definera saker
 #pragma once
 
-struct HighScore
-{
-    int first = 0;
-    int second = 0;
-    int third = 0;
-
-
-    HighScore(int one, int two, int three)
-    {
-        first = one;
-        second = two;
-        third = three;
-    }
-};
 struct Menu
 {
     int selected;
@@ -33,12 +19,11 @@ struct Settings
     //standardvärden
     float delay = 2.317f; //använd i sound.hpp
     float musicVolume = 1.0f;
-    float carVolume = 1.0f;
+    float carVolume = 0.005f;
     float sfxVolume = 1.0f;
     std::vector<int> allHighScores = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 
-    std::vector<HighScore> hi = {}; //alla high scores i en vector
     void ChangeSetting(int change, Menu m) //om vänster/högerpil nedtryckt
     {
         switch (m.selected)
@@ -50,7 +35,7 @@ struct Settings
             SetSetting(musicVolume, change * 0.005f); //ändra med 1% varje gång
             break;
         case 2:
-            SetSetting(carVolume, change * 0.005f); //ändra med 1% varje gång
+            SetSetting(carVolume, change * 0.00005f); //ändra lite lite varje gång
             break;
         case 3:
             SetSetting(sfxVolume, change * 0.005f); //ändra med 1% varje gång
@@ -158,8 +143,8 @@ struct Settings
     {
         delay = 2.31674f;
         musicVolume = 1.0f;
-        carVolume = 1.0f;
-        sfxVolume = 1.0f;
+        carVolume = 0.004f;
+        sfxVolume = 0.8f;
         SaveSettings();
     }
 
