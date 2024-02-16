@@ -11,35 +11,29 @@
 #include "scenery.hpp"
 #include "note.hpp"
 #include "sound.hpp"
-#include "menuHelper.hpp"
+#include "data.hpp" 
 
 //?musik
-Song song;
 Music music; //path till låten
 Beatmap bm;
 CurrentSong cs;
 Timer t;
 Timer songTimer;
+Song song;
 const char* titles[] = {"1: 140 kph\n", "2: Song 2\n", "3: Song 3\n", "4: Song 4\n", "5: Song 5\n"};
 int scores[] = {0, 0, 0};
 
 //misc variabler
-int selectedSong = 0;
+Settings s;
+Menu m;
 unsigned int cycles = 0;
 bool transition = false;
 int activeScene = 0;
 float scrollValue = 0;
-int scrollLoc = 0;
-menuHelper mHelp;
-
-//Textures
+int scrollLoc;
 Texture2D grassTexture;
 Texture2D roadTexture;
 Texture2D skyTexture;
-Texture2D grades;
-Texture2D frame;
-Texture2D failTexture;
-Texture2D backgrounds[3];
 
 Model grassPlane;
 Model asphaltPlane;
@@ -60,22 +54,15 @@ void loadAssets()
     grassTexture = LoadTexture("assets/grass11.png");
     roadTexture = LoadTexture("assets/asphalt.png");
     skyTexture = LoadTexture("assets/Fading_Sky-Sunset_02-1024x512.png");
-    grades = LoadTexture("assets/grades.png");
-    frame = LoadTexture("assets/frame.png");
-    failTexture = LoadTexture("assets/Lbozo.png");
-
-    backgrounds[0] = LoadTexture("assets/TitleScreen.png");
-    backgrounds[1] = LoadTexture("assets/TitleScreen2.png");
-    backgrounds[2] = LoadTexture("assets/TitleScreen3.png");
 
     noteTexture = LoadTexture("assets/note.png");
-    sceneryModels[0][0] = LoadModel("assets/windmillWalls.glb");
-    sceneryModels[0][1] = LoadModel("assets/windmillMain.glb");
+    sceneryModels[0][0] = LoadModel("assets/windmillMain.glb"); 
+    sceneryModels[0][1] = LoadModel("assets/windmillWalls.glb"); 
 
     sceneryModels[1][0] = LoadModel("assets/ladaMain.glb");
     sceneryModels[1][1] = LoadModel("assets/ladaWalls.glb");
 
-    playerModel = LoadModel("assets/carfinal.glb");
+    playerModel = LoadModel("assets/testCar.glb");
     moveSound = LoadSound("assets/104026__rutgermuller__tires-squeaking.wav");
     SetSoundVolume(moveSound, 0.005f);
 
@@ -104,13 +91,6 @@ void unloadAssets()
     UnloadTexture(grassTexture);
     UnloadTexture(roadTexture);
     UnloadTexture(skyTexture);
-    UnloadTexture(failTexture);
-    UnloadTexture(frame);
-    UnloadTexture(grades);
-
-    UnloadTexture(backgrounds[0]);
-    UnloadTexture(backgrounds[1]);
-    UnloadTexture(backgrounds[2]);
 
     UnloadTexture(noteTexture);
     
@@ -127,19 +107,6 @@ void unloadAssets()
     UnloadShader(worldShader);
     UnloadShader(objectShader);
     UnloadShader(noteShader);
-}
-
-void drawSlider(int x, int y, int w, int h, float percent, Color fill, Color bg)
-{
-    /*BG*/
-    DrawCircleSector({(float)(x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 180.0f, 360.0f, 180, bg);
-    DrawRectangle(x + h/2.0f, y, w, h, bg);
-    DrawCircleSector({(float)(w + x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 0, 180.0f, 180, bg);
-
-    /*Fill*/
-    DrawCircleSector({(float)(x + h/2.0f), (float)(y + h/2.0f)}, h/2, 0, -180.0f, 180, fill);
-    DrawRectangle(x + h/2.0f, y, ceil(w * percent), h, fill);
-    DrawCircleSector({(float)(w * percent + x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 0, 180.0f, 180, fill);
 }
 
 
@@ -161,18 +128,19 @@ void drawWorld(Camera3D& cam, Player& plObj, Scenery& scObj, std::vector<Note>& 
     plObj.drawPlayer(playerModel);
 
     //rita dekorationer
-        sceneryModels[scObj.selectedModel][0].transform = MatrixTranslate(scObj.sceneryPosition.x, -1.0f, scObj.sceneryPosition.y);
-        sceneryModels[scObj.selectedModel][1].transform = MatrixTranslate(scObj.sceneryPosition.x, -1.0f, scObj.sceneryPosition.y);
-        if(scObj.selectedModel == 1)
-        {
-            DrawModel(sceneryModels[scObj.selectedModel][0], (Vector3){0.0f,0.0f,0.0f}, 1.0f, WHITE);
-            DrawModel(sceneryModels[scObj.selectedModel][1], (Vector3){0.0f,0.0f,0.0f}, 1.0f, RED);
-        }
-        else
-        {
-            DrawModel(sceneryModels[scObj.selectedModel][0], (Vector3){0.0f,0.0f,0.0f}, 1.0f, BROWN);
-            DrawModel(sceneryModels[scObj.selectedModel][1], (Vector3){0.0f,0.0f,0.0f}, 1.0f, GRAY);
-        }
+    sceneryModels[scObj.selectedModel][0].transform = MatrixTranslate(scObj.sceneryPosition.x, -1.0f, scObj.sceneryPosition.y);
+    sceneryModels[scObj.selectedModel][1].transform = MatrixTranslate(scObj.sceneryPosition.x, -1.0f, scObj.sceneryPosition.y);
+    if(scObj.selectedModel == 0)
+    {
+        DrawModel(sceneryModels[scObj.selectedModel][0], (Vector3){0.0f,0.0f,0.0f}, 1.0f, GRAY);
+        DrawModel(sceneryModels[scObj.selectedModel][1], (Vector3){0.0f,0.0f,0.0f}, 1.0f, BROWN);
+    }
+    else if(scObj.selectedModel == 1)
+    {
+        DrawModel(sceneryModels[scObj.selectedModel][0], (Vector3){0.0f,0.0f,0.0f}, 1.0f, WHITE);
+        DrawModel(sceneryModels[scObj.selectedModel][1], (Vector3){0.0f,0.0f,0.0f}, 1.0f, RED);
+    }
+
     BeginShaderMode(noteShader); //noter har inte en inbyggd shader och därför behövs shadermode
         for (int i = (int)ntObjs.size() - 1; i >= 0; i--)
         {
@@ -184,8 +152,6 @@ void drawWorld(Camera3D& cam, Player& plObj, Scenery& scObj, std::vector<Note>& 
     //Rita FPS och avsluta ritande
     EndMode3D();
     DrawFPS(10, 10);
-    drawSlider(10, 60, 144, 32, (float)(cs.earlyHit + cs.perfectHit + cs.lateHit + cs.notesMissed)/(float)bm.lt.size(), GREEN, GetColor(0x00000066));
-    DrawText(TextFormat("%d%%", (int)floor((float)(cs.earlyHit + cs.perfectHit + cs.lateHit + cs.notesMissed)/(float)bm.lt.size() * 100)), 10, 20, 32, RAYWHITE);
 
     for (int i = (int)htObjs.size() - 1; i >= 0; i--)
     {
@@ -219,20 +185,6 @@ void drawWorld(Camera3D& cam, Player& plObj, Scenery& scObj, std::vector<Note>& 
     EndDrawing();
 }
 
-bool insert(std::vector<int> &v, int n) 
-{
-    for(auto it = v.begin(); it != v.end(); ++it) 
-    {
-        if (*it < n ) 
-        {
-            v.insert( it, n );
-            v.pop_back();
-            return true;
-        }
-    }
-    return false;
-}
-
 //?musik
 void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
 {
@@ -244,35 +196,90 @@ void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle
     std::cout << "\n\n\nHej, beatmappen är laddad\n";
 
 }
-
 void DrawHighScores(int X, int Y, int title)
 {
     DrawText("High Scores:\n",1.5*X, Y, 40, GOLD);
     for (int i = 0; i < 3; i++)
     {
-        DrawText(TextFormat("%d points", scores[i]),1.5*X, Y + 40*(i+1), 40, LIGHTGRAY);
+        DrawText(TextFormat("%d points", scores[i]), 1.5*X, Y + 40*(i+1), 40, LIGHTGRAY);
     }
     
 }
 
-void drawMenu(int keyPress)
+void DrawSettings(int keyPress)
+{
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    int sX = GetScreenWidth()/3;
+    int sY = 150;
+    DrawText(TextFormat("Audio delay:\n <- %d -> milliseconds", s.delay), sX, sY, 30, BLACK);
+    DrawText(TextFormat("Music volume:\n <- %d ->", "placeholder"), sX, sY + 80, 30, BLACK);
+    DrawText(TextFormat("Car volume:\n <- %d ->", "placeholder"), sX, sY + 160, 30, BLACK);
+    DrawText(TextFormat("SFX volume:\n <- %d ->", "placeholder"), sX, sY + 240, 30, BLACK);
+    
+    DrawText("Reset", sX, sY + 360, 30, BLACK);
+    DrawText("Save Settings", sX, sY + 400, 30, BLACK);
+    DrawText("Exit Without Saving", sX, sY + 440, 30, BLACK);
+
+    switch (keyPress)
+    {
+    case 0:
+        DrawText(TextFormat("Audio delay:\n <- %d -> milliseconds", s.delay), sX, sY, 30, GOLD);
+        break;
+    case 1:
+        DrawText(TextFormat("Music volume:\n <- %d ->", "placeholder"), sX, sY + 80, 30, GOLD);
+        break;
+    case 2:
+        DrawText(TextFormat("Car volume:\n <- %d ->", "placeholder"), sX, sY + 160, 30, GOLD);
+        break;
+    case 3:
+        DrawText(TextFormat("SFX volume:\n <- %d ->", "placeholder"), sX, sY + 240, 30, GOLD);
+        break;
+    case 4:
+        DrawText("Reset", sX, sY + 360, 30, GOLD);
+        break;
+    case 5:
+        DrawText("Save Settings", sX, sY + 400, 30, GOLD);
+        break;
+    case 6:
+        DrawText("Exit Without Saving", sX, sY + 440, 30, GOLD);
+        break;
+    default:
+        std::cout << "error in drawsettings" << std::endl;
+        break;
+    }
+    
+    DrawFPS(10, 10);
+    EndDrawing();
+}
+
+void DrawMenu(int keyPress)
 {
     //setup
     BeginDrawing();
     ClearBackground(RAYWHITE);
-    //DrawTexture(frame, 0, 0, WHITE);
-    mHelp.drawFadeBg(backgrounds);
 
     int menuX = GetScreenWidth()/3;
     int menuY = 350;
     //text, x, y, fontsize, color
     DrawText("RYTHM\nRALLY", 500, 50 + 10 * sin(cycles * PI/180), 80, DARKGRAY);
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 6; i++)
     {
-        DrawText(titles[i], menuX, menuY + 40*i, 40, DARKGRAY);
-        if (i == keyPress)
+        if (i >=5) //om inställningar är valt
         {
-            DrawText(titles[i], menuX, menuY + 40*i, 40, GOLD);
+            DrawText("Settings", menuX, menuY + 40*i, 40, DARKGRAY);
+            if (i == keyPress)
+            {
+                DrawText("Settings", menuX, menuY + 40*i, 40, GOLD);
+            }
+        }
+        else
+        {
+            DrawText(titles[i], menuX, menuY + 40*i, 40, DARKGRAY);
+            if (i == keyPress)
+            {
+                DrawText(titles[i], menuX, menuY + 40*i, 40, GOLD);
+            }
 
         }
     }
@@ -282,12 +289,13 @@ void drawMenu(int keyPress)
     if(transition == true)
     {
         DrawCircle(640, 360, cycles * 15, BLACK);
-        if(15 * cycles >= 800)
+        if(15 * cycles >= 800 && activeScene == 0)
         {
+            
             activeScene = 1;
             transition = false;
             //?musik
-            switch (selectedSong)
+            switch (m.selected)
             {
             case 0:
                 PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");                
@@ -306,8 +314,11 @@ void drawMenu(int keyPress)
                 break;
             case 4:
                 song.SongError();
-                
                 break;
+            case 5:
+                DrawSettings(m.selected);
+                break;
+
             default:
                 song.SongError();
                 
@@ -323,33 +334,15 @@ void drawMenu(int keyPress)
     EndDrawing();
 }
 
-
 void DrawResults()
 {
     BeginDrawing();
-    ClearBackground(RAYWHITE);
-    DrawTexture(frame, 0, 0, WHITE);
-    DrawText("Results:", 32, 100, 64, BLACK);
-
-    DrawText(TextFormat("Highest combo: %d notes", cs.highestCombo), 32, 210, 32, BLACK);
-    DrawText(TextFormat("Early: %d%%", (int)floor((float)cs.earlyHit/(float)bm.lt.size() * 100)), 32, 250, 32, BLACK);
-    DrawText(TextFormat("Perfect: %d%%", (int)floor((float)cs.perfectHit/(float)bm.lt.size() * 100)), 32, 290, 32, BLACK);
-    DrawText(TextFormat("Late: %d%%", (int)floor((float)cs.lateHit/(float)bm.lt.size() * 100)), 32, 330, 32, BLACK);
-    DrawText(TextFormat("Missed: %d%%", (int)floor((float)cs.notesMissed/(float)bm.lt.size() * 100)), 32, 370, 32, BLACK);
-    DrawText(TextFormat("Score: %d", cs.currentScore), 32, 480, 32, BLACK);
-
-    DrawTexturePro(grades,{0, cs.finalGrade * 256.0f, 256, 256},{500,104,512,512},{0,0},0.0f,WHITE);
-
-    EndDrawing();
-}
-
-void DrawFail()
-{
-    BeginDrawing();
-    ClearBackground(RAYWHITE);
-    DrawTexturePro(failTexture, {0,0,1920,1080}, {0,0,1280,720}, {0,0}, 0.0f, WHITE);
-    DrawText("Game Over...", 650, 600, 96, WHITE);
-
+    ClearBackground(WHITE);
+    DrawText(TextFormat("Highest combo: %d notes", cs.highestCombo), 500, 200, 32, BLACK);
+    DrawText(TextFormat("Early: %d%%", (int)floor((float)cs.earlyHit/(float)bm.lt.size() * 100)), 500, 250, 32, BLACK);
+    DrawText(TextFormat("Perfect: %d%%", (int)floor((float)cs.perfectHit/(float)bm.lt.size() * 100)), 500, 290, 32, BLACK);
+    DrawText(TextFormat("Late: %d%%", (int)floor((float)cs.lateHit/(float)bm.lt.size() * 100)), 500, 330, 32, BLACK);
+    DrawText(TextFormat("Missed: %d%%", (int)floor((float)cs.notesMissed/(float)bm.lt.size() * 100)), 500, 370, 32, BLACK);
     EndDrawing();
 }
 
@@ -361,7 +354,6 @@ int main()
     const int screenHeight = 720;
     
     //öppna ett nytt fönster
-    SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "Rythm Rally");
     InitAudioDevice();
     SetTargetFPS(60);
@@ -387,50 +379,115 @@ int main()
     {
         cycles += 1;
         
-        if(activeScene == 0)
+        if(activeScene == 0 || activeScene == 4)
         {
-            switch (GetKeyPressed()) //för att man ska kunna välja låt
+
+            switch (GetKeyPressed()) //för att man ska kunna välja i menyn
             {
             case 49: //betyder tangent 1, går att se med mus-hover
-                selectedSong = 0;
+                m.selected = 0; //låtnr eller delay
                 break;
             case 50: 
-                selectedSong = 1;
+                m.selected = 1; //låtnr eller musikvolym
                 break;
             case 51: 
-                selectedSong = 2;
+                m.selected = 2; //låtnr eller tire screech-volym
                 break;
             case 52: 
-                selectedSong = 3;
+                m.selected = 3; //låtnr eller QEsound-volym
                 break;
             case 53: 
-                selectedSong = 4;
+                m.selected = 4; //låtnr eller återställ
+                break;
+            case 54: 
+                m.selected = 5; //låtnr eller spara och gå tillbaka
+                break;
+            case 55: 
+                m.selected = 6; //låtnr eller spara inte men gå tillbaka
+                break;
+            case 263: //key left
+                s.SetDelay(-0.001f);
+                break;
+            case 262: //key right
+                s.SetDelay(0.001f);
                 break;
             case 265: //keycode up
-                selectedSong--;
-                if (selectedSong < 0)
+                m.selected--;
+                if (m.selected < 0 && activeScene == 0)
                 {
-                    selectedSong = 4;
+                    m.selected = 5;
                 }
-                
+                else if(m.selected < 0 && activeScene == 4)
+                {
+                    m.selected = 6;
+                }
                 break;
             case 264: //keycode down
-                selectedSong++;
-                if (selectedSong > 4)
+                m.selected++;
+                if (m.selected > 6 && activeScene == 4)
                 {
-                    selectedSong = 0;
+                    m.selected = 0;
+                    break;
+                }
+                else if(m.selected > 5 && activeScene == 0)
+                {
+                    m.selected = 0;
                 }
                 break;
-                        
             default:
-                drawMenu(selectedSong);
+                if(activeScene == 4)
+                {
+                    DrawSettings(m.selected);
+                    break;
+                }
+                DrawMenu(m.selected);
                 break;
             }
 
-            if(IsKeyPressed(KEY_ENTER) && transition == false)
+            if(IsKeyPressed(KEY_ENTER))
             {
-                transition = true;
-                cycles = 0;
+                std::cout << activeScene << std::endl;
+                if (transition == false)
+                {
+                    transition = true;
+                    cycles = 0;
+                }                
+                
+                if(activeScene == 0)
+                {    
+                    if (m.selected == 5)
+                    {
+                        activeScene = 4; //om settings valt och enter tryckt
+                    }
+                }
+                else if(activeScene == 4)
+                {
+                    switch (m.selected)
+                    {
+                    case 4: //reset and exit
+                        activeScene = 0;
+                        cycles = 0;
+                        s.Resettings();
+                        
+                        break;
+                    case 5: //exit save
+                        activeScene = 0;
+                        cycles = 0;
+                        s.SaveSettings(s.delay);                    
+
+                        break;
+                    case 6:
+                        activeScene = 0; //yes exit no save
+                        cycles = 0;
+                        break;         
+                    default:
+                        activeScene = 4;
+                        break;
+                    }                
+                    //std::cout << m.selected << std::endl;
+                }
+
+                
             }
         }
         else if(activeScene == 1)
@@ -440,10 +497,11 @@ int main()
             
             //flytta varje dekoration och kontrollera om den fortfarande behövs
             sceneryObject.moveScenery();
-            if(sceneryObject.outOfBounds == true && GetRandomValue(0,3) == 2)
+            if(sceneryObject.outOfBounds == true && (int)GetElapsed(songTimer) % 4 == 0 && GetRandomValue(0,1) == 0)
             {
                 sceneryObject = Scenery(GetRandomValue(0,1));
             }
+            
             
             for (int i = (int)noteObjects.size() - 1; i >= 0; i--)
             {
@@ -454,10 +512,6 @@ int main()
                     std::cout << "Miss" << std::endl;
                     cs.notesInARow = 0;
                     cs.notesMissed += 1;
-                    if(cs.scoreAndFailrate(0, 2) == true)
-                    {
-                        activeScene = 3;
-                    }
                 }
                 else if(playerPressedHit == true)
                 {
@@ -479,7 +533,6 @@ int main()
                             cs.earlyHit += 1;
                             cs.notesInARow += 1;
                             cs.setCombo();
-                            cs.scoreAndFailrate(25, -1);
                         }
                         else if(nt.notePosition.y > -1.5f && nt.notePosition.y < -0.5f)//perfekt träf
                         {
@@ -489,7 +542,6 @@ int main()
                             cs.perfectHit += 1;
                             cs.notesInARow += 1;
                             cs.setCombo();
-                            cs.scoreAndFailrate(50, -1);
                         }
                         else if(nt.notePosition.y > -2.0f && nt.notePosition.y < -1.5f) //sen träff
                         {
@@ -499,7 +551,6 @@ int main()
                             cs.lateHit += 1;
                             cs.notesInARow += 1;
                             cs.setCombo();
-                            cs.scoreAndFailrate(25, -1);
                         }
                     }
                 }
@@ -513,55 +564,25 @@ int main()
 
             //?Musik
             UpdateMusicStream(music);   // Ser till att musiken fortsätter spela
-            int laneToPlace = bm.ShouldPlaceNote(GetElapsed(songTimer));
+            int laneToPlace = bm.ShouldPlaceNote(GetElapsed(songTimer)); //berättar vilken fil på vägen som en not ska placeras i
             if((int)bm.lt.size() == cs.notesMissed + cs.earlyHit + cs.perfectHit + cs.lateHit)
             {
-
-                float maxScore = bm.lt.size() * 50.0f;
-
-                if(cs.currentScore/maxScore > 0.8f)
-                {
-                    cs.finalGrade = 5;
-                }
-                else if(cs.currentScore/maxScore > 0.67f)
-                {
-                    cs.finalGrade = 4;
-                }
-                else if(cs.currentScore/maxScore > 0.5f)
-                {
-                    cs.finalGrade = 3;
-                }
-                else if(cs.currentScore/maxScore > 0.33f)
-                {
-                    cs.finalGrade = 2;
-                }
-                else if(cs.currentScore/maxScore > 0.17f)
-                {
-                    cs.finalGrade = 1;
-                }
-                else
-                {
-                    cs.finalGrade = 0;
-                }
-
                 activeScene = 2;
+
             }
             if(laneToPlace != -1) //om tiden är inom en viss  marginal, sätt ut not
             {
                 //?how it's done:
-                
                 noteObjects.push_back(Note(laneToPlace)); 
                 std::cout << "actually placed note lmao imagine that" << std::endl;
             }
         }
+        
         else if(activeScene == 2)
         {
             DrawResults();
         }
-        else if(activeScene == 3)
-        {
-            DrawFail();
-        }
+
         
         
 
