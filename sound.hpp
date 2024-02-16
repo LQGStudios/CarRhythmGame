@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "vector"
 #include "libs/raymath.h"
+#include "data.hpp" //för bla.a note place delay
 #include <list>
 #include <fstream> //för att läsa csv med beatmaps
 #include <iostream>
@@ -53,27 +54,14 @@ struct CurrentSong //Värdena i denna struct ska ändras medans man spelar
     private:
 
     public:
-        double songPosition = 0.0; //time
-        int earlyHit = 0;
-        int perfectHit = 0;
-        int lateHit = 0;
-        int notesMissed = 0;
-        int notesInARow = 0; //nollställ när en not har nått skärmens nedkant
+        double songPosition; //time
+        int earlyHit;
+        int perfectHit;
+        int lateHit;
+        int notesMissed;
+        int notesInARow; //nollställ när en not har nått skärmens nedkant
         int highestCombo = 0;
-        int currentScore = 0;
-        int finalGrade = 0;
-        int failRate = 0;
 
-        bool scoreAndFailrate(int deltaScore, int deltaFail)
-        {
-            
-            currentScore += deltaScore;
-            failRate += deltaFail;
-            if(failRate > 10){return true;}
-            if(failRate < 0){failRate = 0;}
-
-            return false;
-        }
 
         void setCombo()
         {
@@ -99,11 +87,13 @@ struct CSVNote
 struct Beatmap
 {
     public:
-        int l = 0;
-        double t = 0.0;
         Timer timer1;
-        double currTime = 0.0;
-        float beatPosition = 0.0f; //relativ till songPosition
+        Settings s;
+        int l;
+        double t;
+        double currTime;
+        double delay = s.delay;
+        float beatPosition; //relativ till songPosition
         int currentNoteInSong = 0;
         
         std::vector<CSVNote> lt = {}; //lane, time, datan byts ut mot det som står i csv
@@ -153,7 +143,7 @@ struct Beatmap
             //todo: laborera med margin. Den ska vara ca 1/60 av en sekund iom 60 fps target
             float margin = 0.0167f;
 
-            if(lt[currentNoteInSong].time - margin < (elapsed + 2.31674) && (elapsed + 2.31674) < lt[currentNoteInSong].time + margin)
+            if(lt[currentNoteInSong].time - margin < (elapsed + delay) && (elapsed + delay) < lt[currentNoteInSong].time + margin)
             {
                 return lt[currentNoteInSong++].lane; //säger till vilken lane
             }

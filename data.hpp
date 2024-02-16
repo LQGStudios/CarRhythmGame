@@ -14,11 +14,9 @@ struct HighScore
     int second = 0;
     int third = 0;
 
-    HighScore(int one, int two, int three)
+    HighScore(int first, int second, int third)
     {
-        first = one;
-        second = two;
-        third = three;
+        
     }
 };
 struct Menu
