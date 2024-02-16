@@ -132,19 +132,6 @@ void unloadAssets()
     UnloadShader(noteShader);
 }
 
-void drawSlider(int x, int y, int w, int h, float percent, Color fill, Color bg)
-{
-    /*BG*/
-    DrawCircleSector({(float)(x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 180.0f, 360.0f, 180, bg);
-    DrawRectangle(x + h/2.0f, y, w, h, bg);
-    DrawCircleSector({(float)(w + x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 0, 180.0f, 180, bg);
-
-    /*Fill*/
-    DrawCircleSector({(float)(x + h/2.0f), (float)(y + h/2.0f)}, h/2, 0, -180.0f, 180, fill);
-    DrawRectangle(x + h/2.0f, y, ceil(w * percent), h, fill);
-    DrawCircleSector({(float)(w * percent + x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 0, 180.0f, 180, fill);
-}
-
 
 void drawWorld(Camera3D& cam, Player& plObj, Scenery& scObj, std::vector<Note>& ntObjs, std::vector<HitText>& htObjs)
 {
@@ -187,7 +174,7 @@ void drawWorld(Camera3D& cam, Player& plObj, Scenery& scObj, std::vector<Note>& 
     //Rita FPS och avsluta ritande
     EndMode3D();
     DrawFPS(10, 10);
-    drawSlider(10, 60, 144, 32, (float)(cs.earlyHit + cs.perfectHit + cs.lateHit + cs.notesMissed)/(float)bm.lt.size(), GREEN, GetColor(0x00000066));
+    mHelp.drawSlider(10, 60, 144, 32, (float)(cs.earlyHit + cs.perfectHit + cs.lateHit + cs.notesMissed)/(float)bm.lt.size(), GREEN, GetColor(0x00000066));
     DrawText(TextFormat("%d%%", (int)floor((float)(cs.earlyHit + cs.perfectHit + cs.lateHit + cs.notesMissed)/(float)bm.lt.size() * 100)), 10, 20, 32, RAYWHITE);
 
     for (int i = (int)htObjs.size() - 1; i >= 0; i--)
@@ -222,19 +209,6 @@ void drawWorld(Camera3D& cam, Player& plObj, Scenery& scObj, std::vector<Note>& 
     EndDrawing();
 }
 
-bool insert(std::vector<int> &v, int n) 
-{
-    for(auto it = v.begin(); it != v.end(); ++it) 
-    {
-        if (*it < n ) 
-        {
-            v.insert( it, n );
-            v.pop_back();
-            return true;
-        }
-    }
-    return false;
-}
 
 //?musik
 void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
@@ -258,7 +232,7 @@ void DrawHighScores(int X, int Y, int title)
     DrawText("High Scores:\n",1.5*X, Y, 40, GOLD);
     for (int i = 0; i < 3; i++)
     {
-        DrawText(TextFormat("%d points", scores[i]),1.5*X, Y + 40*(i+1), 40, LIGHTGRAY);
+        DrawText(TextFormat("%d points", scores[i]),1.5*X, Y + 40*(i+1), 40, WHITE);
     }
     
 }
@@ -269,10 +243,11 @@ void DrawSettings(int keyPress)
     ClearBackground(RAYWHITE);
     int sX = GetScreenWidth()/3;
     int sY = 150;
-    DrawText(TextFormat("Audio delay:\n <- %f -> milliseconds", bm.s.delay * 1000), sX, sY, 30, BLACK);
-    DrawText(TextFormat("Music volume:\n <- %f ->", "placeholder", bm.s.musicVolume * 100), sX, sY + 80, 30, BLACK);
-    DrawText(TextFormat("Car volume:\n <- %f ->", "placeholder", bm.s.carVolume * 100), sX, sY + 160, 30, BLACK);
-    DrawText(TextFormat("SFX volume:\n <- %f ->", "placeholder", bm.s.sfxVolume * 100), sX, sY + 240, 30, BLACK);
+    DrawText(TextFormat("Audio delay:\n <- %f -> milliseconds", s.delay), sX, sY, 30, BLACK);
+    DrawText(TextFormat("Music volume:\n <- %f ->", s.musicVolume * 100.0f), sX, sY + 80, 30, BLACK);
+    DrawText(TextFormat("Car volume:\n <- %f ->", s.carVolume * 100.0f), sX, sY + 160, 30, BLACK);
+    DrawText(TextFormat("SFX volume:\n <- %f ->", s.sfxVolume * 100.0f), sX, sY + 240, 30, BLACK);
+
     
     DrawText("Reset", sX, sY + 360, 30, BLACK);
     DrawText("Save Settings", sX, sY + 400, 30, BLACK);
@@ -284,13 +259,14 @@ void DrawSettings(int keyPress)
         DrawText(TextFormat("Audio delay:\n <- %f -> milliseconds", bm.s.delay * 1000), sX, sY, 30, GOLD);
         break;
     case 1:
-        DrawText(TextFormat("Music volume:\n <- %f ->", "placeholder", bm.s.musicVolume * 100), sX, sY + 80, 30, GOLD);
+        DrawText(TextFormat("Music volume:\n <- %f ->", s.musicVolume * 100), sX, sY + 80, 30, GOLD);
         break;
     case 2:
-        DrawText(TextFormat("Car volume:\n <- %f ->", "placeholder", bm.s.carVolume * 100), sX, sY + 160, 30, GOLD);
+        DrawText(TextFormat("Car volume:\n <- %f ->", s.carVolume * 100), sX, sY + 160, 30, GOLD);
         break;
     case 3:
-        DrawText(TextFormat("SFX volume:\n <- %f ->", "placeholder", bm.s.sfxVolume * 100), sX, sY + 240, 30, GOLD);
+        DrawText(TextFormat("SFX volume:\n <- %f ->", s.sfxVolume * 100), sX, sY + 240, 30, GOLD);
+
         break;
     case 4:
         DrawText("Reset", sX, sY + 360, 30, GOLD);
@@ -321,13 +297,13 @@ void drawMenu(int keyPress)
     int menuX = GetScreenWidth()/3;
     int menuY = 350;
     //text, x, y, fontsize, color
-    mHelp.drawRoundedSquare(menuX - 50, menuY - 50, 400, 300, Color{0,0,0,120});
+    mHelp.drawRoundedSquare(menuX - 50, menuY - 25, 550, 300, Color{0,0,0,120});
     DrawText("RYTHM\nRALLY", 500, 50 + 10 * sin(cycles * PI/180), 80, DARKGRAY);
     for (int i = 0; i < 6; i++)
     {
         if (i >=5) //om inställningar är valt
         {
-            DrawText("Settings", menuX, menuY + 40*i, 40, DARKGRAY);
+            DrawText("Settings", menuX, menuY + 40*i, 40, LIGHTGRAY);
             if (i == keyPress)
             {
                 DrawText("Settings", menuX, menuY + 40*i, 40, GOLD);
@@ -335,7 +311,7 @@ void drawMenu(int keyPress)
         }
         else
         {
-            DrawText(titles[i], menuX, menuY + 40*i, 40, DARKGRAY);
+            DrawText(titles[i], menuX, menuY + 40*i, 40, LIGHTGRAY);
             if (i == keyPress)
             {
                 DrawText(titles[i], menuX, menuY + 40*i, 40, GOLD);
