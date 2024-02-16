@@ -25,7 +25,6 @@ const char* titles[] = {"1: 140 kph\n", "2: Song 2\n", "3: Song 3\n", "4: Song 4
 int scores[] = {0, 0, 0};
 
 //misc variabler
-Settings s;
 Menu m;
 menuHelper mHelp;
 int selectedSong = 0;
@@ -59,7 +58,8 @@ Shader objectShader;
 Shader noteShader;
 
 void loadAssets()
-{
+{   
+    bm.s.LoadSettings();
     grassTexture = LoadTexture("assets/grass11.png");
     roadTexture = LoadTexture("assets/asphalt.png");
     skyTexture = LoadTexture("assets/Fading_Sky-Sunset_02-1024x512.png");
@@ -239,17 +239,22 @@ bool insert(std::vector<int> &v, int n)
 //?musik
 void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle kunna flyttas till sound.hpp
 {
+
     music = LoadMusicStream(path);
     bm.LoadBeatMap(bPath); //ska ske async från main eller sitta i en vector. Varje gång ny rad läses ur csv, knuffa in i vector
     PlayMusicStream(music);
     StartTimer(&songTimer, GetMusicTimeLength(music)); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
     std::cout << GetMusicTimeLength(music);
-    std::cout << "\n\n\nHej, beatmappen är laddad\n";
+    std::cout << "\n\n\nHej, beatmappen är laddad\n Delay är: " << bm.s.delay << std::endl;
 
 }
 
 void DrawHighScores(int X, int Y, int title)
 {
+    if(title == 5){return;}
+    scores[0] = bm.s.allHighScores[title * 3];
+    scores[1] = bm.s.allHighScores[(title * 3) + 1];
+    scores[2] = bm.s.allHighScores[(title * 3) + 2];
     DrawText("High Scores:\n",1.5*X, Y, 40, GOLD);
     for (int i = 0; i < 3; i++)
     {
@@ -264,10 +269,10 @@ void DrawSettings(int keyPress)
     ClearBackground(RAYWHITE);
     int sX = GetScreenWidth()/3;
     int sY = 150;
-    DrawText(TextFormat("Audio delay:\n <- %f -> milliseconds", s.delay), sX, sY, 30, BLACK);
-    DrawText(TextFormat("Music volume:\n <- %f ->", "placeholder", s.musicVolume * 100), sX, sY + 80, 30, BLACK);
-    DrawText(TextFormat("Car volume:\n <- %f ->", "placeholder", s.carVolume * 100), sX, sY + 160, 30, BLACK);
-    DrawText(TextFormat("SFX volume:\n <- %f ->", "placeholder", s.sfxVolume * 100), sX, sY + 240, 30, BLACK);
+    DrawText(TextFormat("Audio delay:\n <- %f -> milliseconds", bm.s.delay * 1000), sX, sY, 30, BLACK);
+    DrawText(TextFormat("Music volume:\n <- %f ->", "placeholder", bm.s.musicVolume * 100), sX, sY + 80, 30, BLACK);
+    DrawText(TextFormat("Car volume:\n <- %f ->", "placeholder", bm.s.carVolume * 100), sX, sY + 160, 30, BLACK);
+    DrawText(TextFormat("SFX volume:\n <- %f ->", "placeholder", bm.s.sfxVolume * 100), sX, sY + 240, 30, BLACK);
     
     DrawText("Reset", sX, sY + 360, 30, BLACK);
     DrawText("Save Settings", sX, sY + 400, 30, BLACK);
@@ -276,16 +281,16 @@ void DrawSettings(int keyPress)
     switch (keyPress)
     {
     case 0:
-        DrawText(TextFormat("Audio delay:\n <- %f -> milliseconds", s.delay), sX, sY, 30, GOLD);
+        DrawText(TextFormat("Audio delay:\n <- %f -> milliseconds", bm.s.delay * 1000), sX, sY, 30, GOLD);
         break;
     case 1:
-        DrawText(TextFormat("Music volume:\n <- %f ->", "placeholder", s.musicVolume * 100), sX, sY + 80, 30, GOLD);
+        DrawText(TextFormat("Music volume:\n <- %f ->", "placeholder", bm.s.musicVolume * 100), sX, sY + 80, 30, GOLD);
         break;
     case 2:
-        DrawText(TextFormat("Car volume:\n <- %f ->", "placeholder", s.carVolume * 100), sX, sY + 160, 30, GOLD);
+        DrawText(TextFormat("Car volume:\n <- %f ->", "placeholder", bm.s.carVolume * 100), sX, sY + 160, 30, GOLD);
         break;
     case 3:
-        DrawText(TextFormat("SFX volume:\n <- %f ->", "placeholder", s.sfxVolume * 100), sX, sY + 240, 30, GOLD);
+        DrawText(TextFormat("SFX volume:\n <- %f ->", "placeholder", bm.s.sfxVolume * 100), sX, sY + 240, 30, GOLD);
         break;
     case 4:
         DrawText("Reset", sX, sY + 360, 30, GOLD);
@@ -479,12 +484,6 @@ int main()
             case 55: 
                 m.selected = 6; //låtnr eller spara inte men gå tillbaka
                 break;
-            case 263: //key left
-                s.SetDelay(-0.001f);
-                break;
-            case 262: //key right
-                s.SetDelay(0.001f);
-                break;
             case 265: //keycode up
                 m.selected--;
                 if (m.selected < 0 && activeScene == 0)
@@ -518,9 +517,17 @@ int main()
                 break;
             }
 
+            if(IsKeyDown(KEY_LEFT))
+            {
+                bm.s.ChangeSetting(-1, m);
+            }
+            else if(IsKeyDown(KEY_RIGHT))
+            {
+                bm.s.ChangeSetting(1, m);
+            }
+
             if(IsKeyPressed(KEY_ENTER))
             {
-                std::cout << activeScene << std::endl;
                 
                 if(activeScene == 0)
                 {    
@@ -542,14 +549,14 @@ int main()
                         m.selected = 5;
                         activeScene = 0;
                         cycles = 0;
-                        s.Resettings();
+                        bm.s.Resettings();
                         
                         break;
                     case 5: //exit save
                         m.selected = 5;
                         activeScene = 0;
                         cycles = 0;
-                        s.SaveSettings(s.delay);                    
+                        bm.s.SaveSettings();                    
 
                         break;
                     case 6:
@@ -653,6 +660,8 @@ int main()
             {
 
                 float maxScore = bm.lt.size() * 50.0f;
+                bm.s.SetAndSortHighScores(cs.currentScore, m.selected); //tar emot låt och score
+                bm.s.SaveSettings();
 
                 if(cs.currentScore/maxScore > 0.8f)
                 {
