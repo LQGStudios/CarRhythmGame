@@ -14,6 +14,7 @@ struct HighScore
     int second = 0;
     int third = 0;
 
+
     HighScore(int one, int two, int three)
     {
         first = one;
@@ -28,6 +29,12 @@ struct Menu
 struct Settings
 {
     float delay = 2.31674f; //använd i sound.hpp
+
+    float musicVolume = 1.0f;
+    float carVolume = 1.0f;
+    float sfxVolume = 1.0f;
+
+
     std::vector<HighScore> hi = {}; //alla high scores i en vector
     void SetDelay(float timeDiff)
     {
