@@ -51,6 +51,8 @@ struct Song
 
 struct CurrentSong //Värdena i denna struct ska ändras medans man spelar 
 {
+    private:
+
     public:
         double songPosition = 0.0; //time
         int earlyHit = 0;
@@ -103,6 +105,7 @@ struct Beatmap
         int l = 0;
         double t = 0.0;
         double currTime = 0.0;
+        double delay = s.delay;
         float beatPosition = 0.0f; //relativ till songPosition
         int currentNoteInSong = 0;
         
@@ -152,8 +155,8 @@ struct Beatmap
             //todo: matchar tiden. När den har returnat true en gång, gå vidare till [1] av lt och så vidare
             //todo: laborera med margin. Den ska vara ca 1/60 av en sekund iom 60 fps target
             float margin = 0.0167f;
-            std::cout << s.delay << std::endl;
-            if(lt[currentNoteInSong].time - margin < (elapsed + s.delay) && (elapsed + s.delay) < lt[currentNoteInSong].time + margin)
+
+            if(lt[currentNoteInSong].time - margin < (elapsed + delay) && (elapsed + delay) < lt[currentNoteInSong].time + margin)
             {
                 return lt[currentNoteInSong++].lane; //säger till vilken lane
             }
