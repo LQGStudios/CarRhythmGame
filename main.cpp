@@ -278,7 +278,6 @@ void DrawSettings(int keyPress)
     int dispMusic = static_cast<int>(bm.s.musicVolume*100);
     int dispCar = static_cast<int>(bm.s.carVolume*10000);
     int dispSfx = static_cast<int>(bm.s.sfxVolume*100);
-    std::cout<<"Hello World "<<dispSfx<<dispCar<<dispMusic<<dispDelay<<std::endl;
 
 
     DrawText(TextFormat("Audio delay:\n <- %i -> milliseconds", dispDelay), sX, sY, 30, BLACK);

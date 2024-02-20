@@ -18,9 +18,9 @@ struct Settings
 
     //standardvärden
     float delay = 2.317f; //använd i sound.hpp
-    float musicVolume = 1.0f;
-    float carVolume = 0.005f;
-    float sfxVolume = 1.0f;
+    float musicVolume = 0.05f;
+    float carVolume = 0.0004f;
+    float sfxVolume = 0.1f;
     std::vector<int> allHighScores = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 
@@ -101,7 +101,7 @@ struct Settings
     }
     void SaveSettings() //skriv värdet av delay osv. till fil
     {
-        //sakerna som ska sparas är 19 stycken (första 15 är scores), de tar alla upp varsin rad i sparfilen
+        //sakerna som ska sparas tar alla upp varsin rad i sparfilen
         std::string values[19] = {
             std::to_string(allHighScores[0]),
             std::to_string(allHighScores[1]),
@@ -141,10 +141,10 @@ struct Settings
     }
     void Resettings()
     {
-        delay = 2.31674f;
-        musicVolume = 1.0f;
-        carVolume = 0.004f;
-        sfxVolume = 0.8f;
+        delay = 2.317f; //använd i sound.hpp
+        musicVolume = 0.05f;
+        carVolume = 0.0004f;
+        sfxVolume = 0.1f;
         SaveSettings();
     }
 
