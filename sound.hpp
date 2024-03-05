@@ -37,7 +37,7 @@ struct Song
     void SongError()
     {
         std::cerr << errText << std::endl;
-        DrawText(errText, GetScreenWidth()/2, GetScreenHeight()/2, 30, RED);
+        DrawText(errText, GetScreenWidth()/2 - MeasureText(errText, 30)/2, GetScreenHeight()/2, 30, RED);
 
         StartTimer(&closeTimer, 5.0f);
 

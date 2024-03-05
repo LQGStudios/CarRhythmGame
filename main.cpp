@@ -192,7 +192,19 @@ void drawWorld(Camera3D& cam, Player& plObj, Scenery& scObj, std::vector<Note>& 
     //Rita FPS och avsluta ritande
     EndMode3D();
     DrawFPS(10, 10);
-    drawSlider(10, 60, 144, 32, (float)(cs.earlyHit + cs.perfectHit + cs.lateHit + cs.notesMissed)/(float)bm.lt.size(), GREEN, GetColor(0x00000066));
+    if(cs.failRate <= 4)
+    {
+        drawSlider(GetScreenWidth()/2 - 256, 24, 512, 32, 1.0f - cs.failRate/10.0f, GREEN, GetColor(0x00000066));
+    }
+    else if(cs.failRate > 4 && cs.failRate < 7)
+    {
+        drawSlider(GetScreenWidth()/2 - 256, 24, 512, 32, 1.0f - cs.failRate/10.0f, YELLOW, GetColor(0x00000066));
+    }
+    else
+    {
+        drawSlider(GetScreenWidth()/2 - 256, 24, 512, 32, 1.0f - cs.failRate/10.0f, RED, GetColor(0x00000066));
+    }
+    DrawText("Lives: ", GetScreenWidth()/2 - 256 - MeasureText("Lives: ", 32), 24, 32, WHITE);
     DrawText(TextFormat("%d%%", (int)floor((float)(cs.earlyHit + cs.perfectHit + cs.lateHit + cs.notesMissed)/(float)bm.lt.size() * 100)), 10, 20, 32, RAYWHITE);
 
     for (int i = (int)htObjs.size() - 1; i >= 0; i--)
@@ -362,45 +374,37 @@ void drawMenu(int keyPress)
         if(15 * cycles >= 800 && activeScene == 0)
         {
             
-            activeScene = 1;
-            transition = false;
             //?musik
             switch (m.selected)
             {
-            case 0:
-                PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");                
-                break;
-            case 1:
-                song.SongError();
-                
-                break;
-            case 2:
-                song.SongError();
-                
-                break;
-            case 3:
-                song.SongError();
-                
-                break;
-            case 4:
-                song.SongError();
-                break;
-            case 5:
-                DrawSettings(m.selected);
-                break;
-
-            default:
-                song.SongError();
-                
+                case 0:
+                    PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");                
+                    activeScene = 1;
+                    transition = false;
+                    break;
+                case 1:
+                    song.SongError();
+                    break;
+                case 2:
+                    song.SongError();
+                    break;
+                case 3:
+                    song.SongError();
+                    break;
+                case 4:
+                    song.SongError();
+                    break;
+                case 5:
+                    DrawSettings(m.selected);
+                    break;
+                default:
+                    song.SongError();
             }
             
         }
     }
 
     //Rita FPS och avsluta ritande
-
-    DrawFPS(10, 10);
-
     EndDrawing();
 }
 
@@ -435,6 +439,28 @@ void DrawFail()
 }
 
 
+void init()
+{
+    music = Music();
+    bm = Beatmap();
+    cs = CurrentSong();
+    t = Timer();
+    songTimer = Timer();
+    song = Song();
+
+    //misc variabler
+    s = Settings();
+    m = Menu();
+    mHelp = menuHelper();
+    selectedSong = 0;
+    cycles = 0;
+    transition = false;
+    activeScene = 0;
+    scrollValue = 0;
+    scrollLoc = 0;
+    loadAssets();
+}
+
 int main()
 {
     //bredden och höjden på skärmen
@@ -461,7 +487,8 @@ int main()
     std::vector<Note> noteObjects = {};
     std::vector<HitText> hitObjects = {}; //lista över alla dekorationsobjekt
 
-    loadAssets();
+    init();
+    
 
     //huvudloop
     while (!WindowShouldClose())
@@ -718,10 +745,12 @@ int main()
         else if(activeScene == 2)
         {
             DrawResults();
+            if(IsKeyPressed(KEY_ENTER) == true){unloadAssets();init();}
         }
         else if(activeScene == 3)
         {
             DrawFail();
+            if(IsKeyPressed(KEY_ENTER) == true){unloadAssets();init();}
         }
         
         
