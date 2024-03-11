@@ -21,7 +21,7 @@ CurrentSong cs;
 Timer t;
 Timer songTimer;
 Song song;
-const char* titles[] = {"1: 140 kph\n", "2: Song 2\n", "3: Song 3\n", "4: Song 4\n", "5: Song 5\n"};
+const char* titles[] = {"Easy: Better Day", "Medium: Song 2", "Light Cavallery", "Hard: 140 kph",  " "};
 int scores[] = {0, 0, 0};
 
 //misc variabler
@@ -204,7 +204,7 @@ void drawWorld(Camera3D& cam, Player& plObj, Scenery& scObj, std::vector<Note>& 
     {
         drawSlider(GetScreenWidth()/2 - 256, 24, 512, 32, 1.0f - cs.failRate/10.0f, RED, GetColor(0x00000066));
     }
-    DrawText("Lives: ", GetScreenWidth()/2 - 256 - MeasureText("Lives: ", 32), 24, 32, WHITE);
+    DrawText("Life: ", GetScreenWidth()/2 - 256 - MeasureText("Life: ", 32), 24, 32, WHITE);
     DrawText(TextFormat("%d%%", (int)floor((float)(cs.earlyHit + cs.perfectHit + cs.lateHit + cs.notesMissed)/(float)bm.lt.size() * 100)), 10, 20, 32, RAYWHITE);
 
     for (int i = (int)htObjs.size() - 1; i >= 0; i--)
@@ -271,10 +271,10 @@ void DrawHighScores(int X, int Y, int title)
     scores[0] = bm.s.allHighScores[title * 3];
     scores[1] = bm.s.allHighScores[(title * 3) + 1];
     scores[2] = bm.s.allHighScores[(title * 3) + 2];
-    DrawText("High Scores:\n",1.5*X, Y, 40, GOLD);
+    DrawText("High Scores:\n",X, Y, 40, GOLD);
     for (int i = 0; i < 3; i++)
     {
-        DrawText(TextFormat("%d points", scores[i]),1.5*X, Y + 40*(i+1), 40, LIGHTGRAY);
+        DrawText(TextFormat("%d points", scores[i]),X, Y + 40*(i+1), 40, LIGHTGRAY);
     }
     
 }
@@ -340,10 +340,10 @@ void drawMenu(int keyPress)
     mHelp.drawFadeBg(backgrounds);
 
 
-    int menuX = GetScreenWidth()/3;
+    int menuX = GetScreenWidth()/4;
     int menuY = 350;
     //text, x, y, fontsize, color
-    mHelp.drawRoundedSquare(menuX - 50, menuY - 25, 550, 300, Color{0,0,0,120});
+    mHelp.drawRoundedSquare(menuX - 50, menuY - 25, 750, 300, Color{0,0,0,120});
     DrawText("RYTHM\nRALLY", 500, 50 + 10 * sin(cycles * PI/180), 80, DARKGRAY);
     for (int i = 0; i < 6; i++)
     {
@@ -360,13 +360,13 @@ void drawMenu(int keyPress)
             DrawText(titles[i], menuX, menuY + 40*i, 40, LIGHTGRAY);
             if (i == keyPress)
             {
-                DrawText(titles[i], menuX, menuY + 40*i, 40, GOLD);
+                DrawText(titles[i], menuX, menuY +40*i, 40, GOLD);
             }
 
         }
     }
 
-    DrawHighScores(menuX, menuY, keyPress);
+    DrawHighScores(2*menuX + 80, menuY, keyPress);
 
     if(transition == true)
     {
@@ -378,7 +378,7 @@ void drawMenu(int keyPress)
             switch (m.selected)
             {
                 case 0:
-                    PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");                
+                    PlaySong("assets/music/better-day-186374.mp3", bm, "assets/beatmaps/better.csv");  
                     activeScene = 1;
                     transition = false;
                     break;
@@ -386,10 +386,14 @@ void drawMenu(int keyPress)
                     song.SongError();
                     break;
                 case 2:
-                    song.SongError();
+                    PlaySong("assets/music/SuppeLightCavallery.mp3", bm, "assets/beatmaps/lc.csv");                
+                    activeScene = 1;
+                    transition = false;
                     break;
                 case 3:
-                    song.SongError();
+                    PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");                
+                    activeScene = 1;
+                    transition = false;              
                     break;
                 case 4:
                     song.SongError();
