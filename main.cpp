@@ -21,7 +21,7 @@ CurrentSong cs;
 Timer t;
 Timer songTimer;
 Song song;
-const char* titles[] = {"Easy: Better Day", "Medium: Song 2", "Light Cavallery", "Hard: 140 kph",  " "};
+const char* titles[] = {"Easy: Better Day", "Medium: Song 2", "Light Cavallery", "Hard: 140 kph"};
 int scores[] = {0, 0, 0};
 
 //misc variabler
@@ -344,15 +344,15 @@ void drawMenu(int keyPress)
     int menuY = 350;
     //text, x, y, fontsize, color
     mHelp.drawRoundedSquare(menuX - 50, menuY - 25, 750, 300, Color{0,0,0,120});
-    DrawText("RYTHM\nRALLY", 500, 50 + 10 * sin(cycles * PI/180), 80, DARKGRAY);
-    for (int i = 0; i < 6; i++)
+    DrawText("RHYTHM\nRALLY", 500, 50 + 10 * sin(cycles * PI/180), 80, DARKGRAY);
+    for (int i = 0; i < 5; i++)
     {
-        if (i >=5) //om inställningar är valt
+        if (i >=4) //om inställningar är valt
         {
-            DrawText("Settings", menuX, menuY + 40*i, 40, LIGHTGRAY);
+            DrawText("Settings", menuX, menuY + 40*i + 40, 40, LIGHTGRAY);
             if (i == keyPress)
             {
-                DrawText("Settings", menuX, menuY + 40*i, 40, GOLD);
+                DrawText("Settings", menuX, menuY + 40*i + 40, 40, GOLD);
             }
         }
         else
@@ -396,9 +396,6 @@ void drawMenu(int keyPress)
                     transition = false;              
                     break;
                 case 4:
-                    song.SongError();
-                    break;
-                case 5:
                     DrawSettings(m.selected);
                     break;
                 default:
