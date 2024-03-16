@@ -189,9 +189,8 @@ void drawWorld(Camera3D& cam, Player& plObj, Scenery& scObj, std::vector<Note>& 
         }
     EndShaderMode();
     
-    //Rita FPS och avsluta ritande
+    //Avsluta ritande
     EndMode3D();
-    DrawFPS(10, 10);
     if(cs.failRate <= 4)
     {
         drawSlider(GetScreenWidth()/2 - 256, 24, 512, 32, 1.0f - cs.failRate/10.0f, GREEN, GetColor(0x00000066));
@@ -345,6 +344,7 @@ void drawMenu(int keyPress)
     //text, x, y, fontsize, color
     mHelp.drawRoundedSquare(menuX - 50, menuY - 25, 750, 300, Color{0,0,0,120});
     DrawText("RHYTHM\nRALLY", 500, 50 + 10 * sin(cycles * PI/180), 80, DARKGRAY);
+
     for (int i = 0; i < 5; i++)
     {
         if (i >=4) //om inställningar är valt
@@ -423,6 +423,7 @@ void DrawResults()
     DrawText(TextFormat("Late: %d%%", (int)floor((float)cs.lateHit/(float)bm.lt.size() * 100)), 32, 330, 32, BLACK);
     DrawText(TextFormat("Missed: %d%%", (int)floor((float)cs.notesMissed/(float)bm.lt.size() * 100)), 32, 370, 32, BLACK);
     DrawText(TextFormat("Score: %d", cs.currentScore), 32, 480, 32, BLACK);
+    DrawText("Press enter to continue", 720, 640 + 2*sin(cycles * PI/90), 40, BLACK);
 
     DrawTexturePro(grades,{0, cs.finalGrade * 256.0f, 256, 256},{500,104,512,512},{0,0},0.0f,WHITE);
 
@@ -435,6 +436,8 @@ void DrawFail()
     ClearBackground(RAYWHITE);
     DrawTexturePro(failTexture, {0,0,1920,1080}, {0,0,1280,720}, {0,0}, 0.0f, WHITE);
     DrawText("Game Over...", 650, 600, 96, WHITE);
+    DrawText("Press enter to continue", 650, 685 + 2*sin(cycles * PI/90), 30, WHITE);
+
 
     EndDrawing();
 }
@@ -470,7 +473,7 @@ int main()
     
     //öppna ett nytt fönster
     SetConfigFlags(FLAG_VSYNC_HINT);
-    InitWindow(screenWidth, screenHeight, "Rythm Rally");
+    InitWindow(screenWidth, screenHeight, "Rhythm Rally");
     InitAudioDevice();
     SetTargetFPS(60);
 
