@@ -63,30 +63,61 @@ struct Player
 
         bool playerInput(Sound& sfx, Sound& sfx2)
         {
-            //om en piltangent är nedtryckt, flytta spelaren och starta animationen
-            if((IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)) && playerXPosition > -3.0f)
+            if(IsGamepadAvailable(0))
             {
-                PlaySound(sfx);
-                animationProgress = 0;
-                animationDirection = -1;
-                animationCycles = 0;
-                animatorActive = true;
-                playerXPosition -= 1.5f;
-            }
-            else if((IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_A)) && playerXPosition < 3.0f)
-            {
-                PlaySound(sfx);
-                animationProgress = 0;
-                animationDirection = 1;
-                animationCycles = 0;
-                animatorActive = true;
-                playerXPosition += 1.5f;
-            }
+                //om en piltangent är nedtryckt, flytta spelaren och starta animationen
+                if((IsKeyPressed(KEY_RIGHT) || IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT) || IsKeyPressed(KEY_D)) && playerXPosition > -3.0f)
+                {
+                    PlaySound(sfx);
+                    animationProgress = 0;
+                    animationDirection = -1;
+                    animationCycles = 0;
+                    animatorActive = true;
+                    playerXPosition -= 1.5f;
+                }
+                else if((IsKeyPressed(KEY_LEFT) || IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT) || IsKeyPressed(KEY_A)) && playerXPosition < 3.0f)
+                {
+                    PlaySound(sfx);
+                    animationProgress = 0;
+                    animationDirection = 1;
+                    animationCycles = 0;
+                    animatorActive = true;
+                    playerXPosition += 1.5f;
+                }
 
-            if(IsKeyPressed(KEY_E) || IsKeyPressed(KEY_Q))
+                if(IsKeyPressed(KEY_E) || IsKeyPressed(KEY_Q) || IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN) )
+                {
+                    PlaySound(sfx2);
+                    return true;
+                }
+            }
+            else
             {
-                PlaySound(sfx2);
-                return true;
+                //om en piltangent är nedtryckt, flytta spelaren och starta animationen
+                if((IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)) && playerXPosition > -3.0f)
+                {
+                    PlaySound(sfx);
+                    animationProgress = 0;
+                    animationDirection = -1;
+                    animationCycles = 0;
+                    animatorActive = true;
+                    playerXPosition -= 1.5f;
+                }
+                else if((IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_A)) && playerXPosition < 3.0f)
+                {
+                    PlaySound(sfx);
+                    animationProgress = 0;
+                    animationDirection = 1;
+                    animationCycles = 0;
+                    animatorActive = true;
+                    playerXPosition += 1.5f;
+                }
+
+                if(IsKeyPressed(KEY_E) || IsKeyPressed(KEY_Q))
+                {
+                    PlaySound(sfx2);
+                    return true;
+                }
             }
 
             return false;

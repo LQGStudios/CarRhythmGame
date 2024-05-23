@@ -44,7 +44,7 @@ struct menuHelper
         float circleRadius = floor((w * 0.125f + h * 0.25f)/2.0f);
 
         DrawCircleSector({x + circleRadius, y + circleRadius}, circleRadius, 180, 270, 180, c);
-        DrawCircleSector({x + (w - circleRadius), y + circleRadius}, circleRadius, 90, 180, 180, c);
+        DrawCircleSector({x + (w - circleRadius), y + circleRadius}, circleRadius, 270, 360, 180, c);
 
         DrawRectangle(x + circleRadius, y, w - circleRadius * 2, circleRadius, c);
 
@@ -52,7 +52,7 @@ struct menuHelper
 
         DrawRectangle(x + circleRadius, y + (h - circleRadius), w - circleRadius * 2, circleRadius, c);
         
-        DrawCircleSector({x + circleRadius, y + (h - circleRadius)}, circleRadius, 270, 360, 180, c);
+        DrawCircleSector({x + circleRadius, y + (h - circleRadius)}, circleRadius, 90, 180, 180, c);
         DrawCircleSector({x + (w - circleRadius), y + (h - circleRadius)}, circleRadius, 0, 90, 180, c);
     }
 };

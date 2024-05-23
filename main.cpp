@@ -140,14 +140,14 @@ void unloadAssets()
 void drawSlider(int x, int y, int w, int h, float percent, Color fill, Color bg)
 {
     /*BG*/
-    DrawCircleSector({(float)(x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 180.0f, 360.0f, 180, bg);
+    DrawCircleSector({(float)(x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 90.0f, 270.0f, 180, bg);
     DrawRectangle(x + h/2.0f, y, w, h, bg);
-    DrawCircleSector({(float)(w + x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 0, 180.0f, 180, bg);
+    DrawCircleSector({(float)(w + x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, -90.0f, 90.0f, 180, bg);
 
     /*Fill*/
-    DrawCircleSector({(float)(x + h/2.0f), (float)(y + h/2.0f)}, h/2, 0, -180.0f, 180, fill);
+    DrawCircleSector({(float)(x + h/2.0f), (float)(y + h/2.0f)}, h/2, 90.0f, 270.0f, 180, fill);
     DrawRectangle(x + h/2.0f, y, ceil(w * percent), h, fill);
-    DrawCircleSector({(float)(w * percent + x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, 0, 180.0f, 180, fill);
+    DrawCircleSector({(float)(w * percent + x + h/2.0f), (float)(y + h/2.0f)}, h/2.0f, -90.0f, 90.0f, 180, fill);
 }
 
 
@@ -259,8 +259,7 @@ void PlaySong(const char* path, Beatmap& bm,const char* bPath) //den här skulle
     bm.LoadBeatMap(bPath); //ska ske async från main eller sitta i en vector. Varje gång ny rad läses ur csv, knuffa in i vector
     PlayMusicStream(music);
     StartTimer(&songTimer, GetMusicTimeLength(music)); //& hämtar adressen till en vanlig variabel. I sound.hpp tar ten här funtionen en poiunter som argument så därför behövs & här
-    std::cout << GetMusicTimeLength(music);
-    std::cout << "\n\n\nHej, beatmappen är laddad\n Delay är: " << bm.s.delay << std::endl;
+    
 
 }
 
@@ -291,10 +290,10 @@ void DrawSettings(int keyPress)
     int dispSfx = static_cast<int>(bm.s.sfxVolume*100);
 
 
-    DrawText(TextFormat("Audio delay:\n <- %i -> milliseconds", dispDelay), sX, sY, 30, BLACK);
-    DrawText(TextFormat("Music volume:\n <- %i ->", dispMusic), sX, sY + 80, 30, BLACK);
-    DrawText(TextFormat("Car volume:\n <- %i ->", dispCar), sX, sY + 160, 30, BLACK);
-    DrawText(TextFormat("SFX volume:\n <- %i ->", dispSfx), sX, sY + 240, 30, BLACK);
+    DrawText(TextFormat("Audio delay:\n\n\n <- %i -> milliseconds", dispDelay), sX, sY, 30, BLACK);
+    DrawText(TextFormat("Music volume:\n\n\n <- %i ->", dispMusic), sX, sY + 80, 30, BLACK);
+    DrawText(TextFormat("Car volume:\n\n\n <- %i ->", dispCar), sX, sY + 160, 30, BLACK);
+    DrawText(TextFormat("SFX volume:\n\n\n <- %i ->", dispSfx), sX, sY + 240, 30, BLACK);
     
     DrawText("Reset", sX, sY + 360, 30, BLACK);
     DrawText("Save Settings", sX, sY + 400, 30, BLACK);
@@ -302,16 +301,16 @@ void DrawSettings(int keyPress)
     switch (keyPress)
     {
     case 0:
-        DrawText(TextFormat("Audio delay:\n <- %i -> milliseconds", dispDelay), sX, sY, 30, GOLD);
+        DrawText(TextFormat("Audio delay:\n\n\n <- %i -> milliseconds", dispDelay), sX, sY, 30, GOLD);
         break;
     case 1:
-        DrawText(TextFormat("Music volume:\n <- %i ->", dispMusic), sX, sY + 80, 30, GOLD);
+        DrawText(TextFormat("Music volume:\n\n\n <- %i ->", dispMusic), sX, sY + 80, 30, GOLD);
         break;
     case 2:
-        DrawText(TextFormat("Car volume:\n <- %i ->", dispCar), sX, sY + 160, 30, GOLD);
+        DrawText(TextFormat("Car volume:\n\n\n <- %i ->", dispCar), sX, sY + 160, 30, GOLD);
         break;
     case 3:
-        DrawText(TextFormat("SFX volume:\n <- %i ->", dispSfx), sX, sY + 240, 30, GOLD);
+        DrawText(TextFormat("SFX volume:\n\n\n <- %i ->", dispSfx), sX, sY + 240, 30, GOLD);
         break;
     case 4:
         DrawText("Reset", sX, sY + 360, 30, GOLD);
@@ -343,7 +342,7 @@ void drawMenu(int keyPress)
     int menuY = 350;
     //text, x, y, fontsize, color
     mHelp.drawRoundedSquare(menuX - 50, menuY - 25, 750, 300, Color{0,0,0,120});
-    DrawText("RHYTHM\nRALLY", 500, 50 + 10 * sin(cycles * PI/180), 80, DARKGRAY);
+    DrawText("RHYTHM\n\n\n\n\n RALLY", 500, 50 + 10 * sin(cycles * PI/180), 80, DARKGRAY);
 
     for (int i = 0; i < 5; i++)
     {
@@ -394,9 +393,6 @@ void drawMenu(int keyPress)
                     PlaySong("assets/music/140kph.ogg", bm, "assets/beatmaps/bm140.csv");                
                     activeScene = 1;
                     transition = false;              
-                    break;
-                case 4:
-                    DrawSettings(m.selected);
                     break;
                 default:
                     song.SongError();
@@ -493,78 +489,83 @@ int main()
 
     init();
     
+    bool gamepadPluggedIn = false;
 
     //huvudloop
     while (!WindowShouldClose())
     {
+        gamepadPluggedIn = IsGamepadAvailable(0);
         cycles += 1;
         
-                if(activeScene == 0 || activeScene == 4)
+        if(activeScene == 0 || activeScene == 4)
         {
 
             switch (GetKeyPressed()) //för att man ska kunna välja i menyn
             {
-            case 49: //betyder tangent 1, går att se med mus-hover
-                m.selected = 0; //låtnr eller delay
-                break;
-            case 50: 
-                m.selected = 1; //låtnr eller musikvolym
-                break;
-            case 51: 
-                m.selected = 2; //låtnr eller tire screech-volym
-                break;
-            case 52: 
-                m.selected = 3; //låtnr eller QEsound-volym
-                break;
-            case 53: 
-                m.selected = 4; //låtnr eller återställ
-                break;
-            case 54: 
-                m.selected = 5; //låtnr eller spara och gå tillbaka
-                break;
-            case 55: 
-                m.selected = 6; //låtnr eller spara inte men gå tillbaka
-                break;
-            case 265: //keycode up
-                m.selected--;
-                if (m.selected < 0 && activeScene == 0)
-                {
-                    m.selected = 5;
-                }
-                else if(m.selected < 0 && activeScene == 4)
-                {
-                    m.selected = 6;
-                }
-                break;
-            case 264: //keycode down
-                m.selected++;
-                if (m.selected > 6 && activeScene == 4)
-                {
-                    m.selected = 0;
+                case 49: //betyder tangent 1, går att se med mus-hover
+                    m.selected = 0; //låtnr eller delay
                     break;
-                }
-                else if(m.selected > 5 && activeScene == 0)
-                {
-                    m.selected = 0;
-                }
-                break;
-            default:
-                if(activeScene == 4)
-                {
-                    DrawSettings(m.selected);
+                case 50: 
+                    m.selected = 1; //låtnr eller musikvolym
                     break;
-                }
-                drawMenu(m.selected);
-                break;
+                case 51: 
+                    m.selected = 2; //låtnr eller tire screech-volym
+                    break;
+                case 52: 
+                    m.selected = 3; //låtnr eller QEsound-volym
+                    break;
+                case 53: 
+                    m.selected = 4; //låtnr eller återställ
+                    break;
+                case 54: 
+                    m.selected = 5; //låtnr eller spara och gå tillbaka
+                    break;
+                case 55: 
+                    m.selected = 6; //låtnr eller spara inte men gå tillbaka
+                    break;
+                case 265: //keycode up
+                    m.selected--;
+                    if (m.selected < 0 && activeScene == 0)
+                    {
+                        m.selected = 4;
+                    }
+                    else if(m.selected < 0 && activeScene == 4)
+                    {
+                        m.selected = 6;
+                    }
+                    break;
+                case 264: //keycode down
+                    m.selected++;
+                    if (m.selected > 6 && activeScene == 4)
+                    {
+                        m.selected = 0;
+                        break;
+                    }
+                    else if(m.selected > 4 && activeScene == 0)
+                    {
+                        m.selected = 0;
+                    }
+                    break;
+                default:
+                    if(activeScene == 4)
+                    {
+                        DrawSettings(m.selected);
+                        break;
+                    }
+                    drawMenu(m.selected);
+                    break;
             }
 
-            if(IsKeyDown(KEY_LEFT))
+            if(activeScene == 4)
             {
-                bm.s.ChangeSetting(-1, m);
-            }
-            else if(IsKeyDown(KEY_RIGHT))
-            {
-                bm.s.ChangeSetting(1, m);
+                if(IsKeyDown(KEY_LEFT))
+                {
+                    bm.s.ChangeSetting(-1, m);
+                }
+                else if(IsKeyDown(KEY_RIGHT))
+                {
+                    bm.s.ChangeSetting(1, m);
+                }
             }
 
             if(IsKeyPressed(KEY_ENTER))
@@ -572,7 +573,7 @@ int main()
                 
                 if(activeScene == 0)
                 {    
-                    if (m.selected == 5)
+                    if (m.selected == 4)
                     {
                         activeScene = 4; //om settings valt och enter tryckt
                     }
@@ -587,29 +588,26 @@ int main()
                     switch (m.selected)
                     {
                     case 4: //reset and exit
-                        m.selected = 5;
+                        m.selected = 4;
                         activeScene = 0;
                         cycles = 0;
                         bm.s.Resettings();
-                        std::cout << "Delay: " << bm.s.delay << " musik: " << bm.s.musicVolume << " bil: "<< bm.s.carVolume << " sfx: "<< bm.s.sfxVolume << std::endl;
 
                         break;
                     case 5: //exit save
-                        m.selected = 5;
+                        m.selected = 4;
                         activeScene = 0;
                         cycles = 0;
                         bm.s.SaveSettings();
                         //de uppdateras nu utan att behöva stänga spelet
                         SetSoundVolume(moveSound, bm.s.carVolume); 
                         SetSoundVolume(QEsound, bm.s.sfxVolume);
-                        std::cout << "Delay: " << bm.s.delay << " musik: " << bm.s.musicVolume << " bil: "<< bm.s.carVolume << " sfx: "<< bm.s.sfxVolume << std::endl;
 
                         break;
                     case 6: //yes exit no save
-                        m.selected = 5;
+                        m.selected = 4;
                         activeScene = 0; 
                         cycles = 0;
-                        std::cout << "Delay: " << bm.s.delay << " musik: " << bm.s.musicVolume << " bil: "<< bm.s.carVolume << " sfx: "<< bm.s.sfxVolume << std::endl;
 
                         break;         
                     default: //går till save-knappen
@@ -617,10 +615,104 @@ int main()
                         activeScene = 4;
                         break;
                     }                 
-                    //std::cout << m.selected << std::endl;
                 }
 
                 
+            }
+
+            //ANYONE READING THIS IN THE FUTURE, PLEASE GOD NEVER EVER EVER WRITE A MENU LIKE THIS. (This was written after the rant below)
+            ///FUCK YOU, WRITE A BETTER FUCKING MENU NEXT TIME. MAYBE THEN I WONT HAVE TO DUPLICATE THE ENTIRE FUCKING CODEBASE JUST SO THE MENU WONT CRASH THE GAME LIKE MH370 
+            if(gamepadPluggedIn)
+            {
+                if(IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_UP))
+                {
+                    m.selected--;
+                    if (m.selected < 0 && activeScene == 0)
+                    {
+                        m.selected = 4;
+                    }
+                    else if(m.selected < 0 && activeScene == 4)
+                    {
+                        m.selected = 6;
+                    }
+                }
+                else if(IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN))
+                {
+                    m.selected++;
+                    if (m.selected > 6 && activeScene == 4)
+                    {
+                        m.selected = 0;
+                        break;
+                    }
+                    else if(m.selected > 4 && activeScene == 0)
+                    {
+                        m.selected = 0;
+                    }
+                }
+
+                if(activeScene == 4)
+                {
+                    if(IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT))
+                    {
+                        bm.s.ChangeSetting(-1, m);
+                    }
+                    else if(IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT))
+                    {
+                        bm.s.ChangeSetting(1, m);
+                    }
+                }
+
+                if(IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
+                {
+                    
+                    if(activeScene == 0)
+                    {    
+                        if (m.selected == 4)
+                        {
+                            activeScene = 4; //om settings valt och enter tryckt
+                        }
+                        else if (transition == false)
+                        {
+                            transition = true;
+                            cycles = 0;
+                        }                
+                    }
+                    else if(activeScene == 4)
+                    {
+                        switch (m.selected)
+                        {
+                        case 4: //reset and exit
+                            m.selected = 4;
+                            activeScene = 0;
+                            cycles = 0;
+                            bm.s.Resettings();
+
+                            break;
+                        case 5: //exit save
+                            m.selected = 4;
+                            activeScene = 0;
+                            cycles = 0;
+                            bm.s.SaveSettings();
+                            //de uppdateras nu utan att behöva stänga spelet
+                            SetSoundVolume(moveSound, bm.s.carVolume); 
+                            SetSoundVolume(QEsound, bm.s.sfxVolume);
+
+                            break;
+                        case 6: //yes exit no save
+                            m.selected = 4;
+                            activeScene = 0; 
+                            cycles = 0;
+
+                            break;         
+                        default: //går till save-knappen
+                            m.selected = 5;
+                            activeScene = 4;
+                            break;
+                        }                 
+                    }
+
+                    
+                }
             }
         }
         else if(activeScene == 1)
@@ -641,7 +733,6 @@ int main()
                 if(nt.moveNote() == true)
                 {
                     hitObjects.push_back(HitText(3));
-                    std::cout << "Miss" << std::endl;
                     cs.notesInARow = 0;
                     cs.notesMissed += 1;
                     if(cs.scoreAndFailrate(0, 2) == true)
@@ -664,7 +755,6 @@ int main()
                         if(nt.notePosition.y > -0.5f && nt.notePosition.y < 0.0f)//tidig träff
                         {
                             hitObjects.push_back(HitText(0));
-                            std::cout << "EARLY" << std::endl;
                             nt.outOfBounds = true;
                             cs.earlyHit += 1;
                             cs.notesInARow += 1;
@@ -674,7 +764,6 @@ int main()
                         else if(nt.notePosition.y > -1.5f && nt.notePosition.y < -0.5f)//perfekt träf
                         {
                             hitObjects.push_back(HitText(1));
-                            std::cout << "PERFEKT" << std::endl;
                             nt.outOfBounds = true;
                             cs.perfectHit += 1;
                             cs.notesInARow += 1;
@@ -684,7 +773,6 @@ int main()
                         else if(nt.notePosition.y > -2.0f && nt.notePosition.y < -1.5f) //sen träff
                         {
                             hitObjects.push_back(HitText(2));
-                            std::cout << "LATE" << std::endl;
                             nt.outOfBounds = true;
                             cs.lateHit += 1;
                             cs.notesInARow += 1;
@@ -743,18 +831,39 @@ int main()
                 //?how it's done:
                 
                 noteObjects.push_back(Note(laneToPlace)); 
-                std::cout << "actually placed note lmao imagine that" << std::endl;
             }
         }
         else if(activeScene == 2)
         {
             DrawResults();
             if(IsKeyPressed(KEY_ENTER) == true){unloadAssets();init();}
+            if(gamepadPluggedIn)
+            {
+                if(IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN) == true)
+                {
+                    unloadAssets();init();
+                    hitObjects.clear();
+                    noteObjects.clear();
+                }
+            }
         }
         else if(activeScene == 3)
         {
             DrawFail();
             if(IsKeyPressed(KEY_ENTER) == true){unloadAssets();init();}
+            if(gamepadPluggedIn)
+            {
+                if(IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN) == true)
+                {
+                    unloadAssets();init();
+                    hitObjects.clear();
+                    noteObjects.clear();
+                }
+            }
+        }
+        else if(activeScene == 4)
+        {
+            DrawSettings(m.selected);
         }
         
         
